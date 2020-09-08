@@ -45,17 +45,15 @@ public class Main {
         options.addOption(output);
 
         CommandLineParser parser = new DefaultParser();
-        HelpFormatter formatter = new HelpFormatter();
 
         try {
             CommandLine cmd = parser.parse(options, args);
             String port = cmd.getOptionValue("port");
 
             start(Integer.parseInt(port));
-            System.out.println("JDBC.NET.Bridge is running...");
+            System.out.println("JDBC.NET.Bridge is running on port " + port + "...");
 
             blockUntilShutdown();
-
         } catch (ParseException e) {
             System.out.println(e.getMessage());
             System.exit(1);

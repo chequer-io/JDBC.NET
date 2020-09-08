@@ -7,6 +7,7 @@ import io.grpc.stub.StreamObserver;
 public class BridgeServiceImpl extends BridgeServiceGrpc.BridgeServiceImplBase {
     @Override
     public void loadDriver(Bridge.LoadDriverRequest request, StreamObserver<Bridge.LoadDriverResponse> responseObserver) {
+        System.out.println("LOAD!");
 
         Bridge.LoadDriverResponse response = Bridge.LoadDriverResponse.newBuilder()
                 .setVersion("1.2.0")

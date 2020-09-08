@@ -7,9 +7,7 @@ namespace JDBC.NET.Sample
     {
         static void Main(string[] args)
         {
-            var connection = new JdbcConnection();
-            connection.Connect();
-
+            using var connection = new JdbcConnection();
             Console.WriteLine("Hello World!");
         }
     }
