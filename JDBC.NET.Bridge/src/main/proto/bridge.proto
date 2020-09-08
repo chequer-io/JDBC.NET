@@ -5,12 +5,13 @@ option csharp_namespace = "JDBC.NET.Proto";
 package bridge;
 
 service BridgeService {
-    rpc initialize (InitializeRequest) returns (InitializeResponse);
+    rpc loadDriver (LoadDriverRequest) returns (LoadDriverResponse);
 }
 
-message InitializeRequest {
-	string version = 1;
+message LoadDriverRequest {
+	string path = 1;
 }
 
-message InitializeResponse {
+message LoadDriverResponse {
+  string version = 1;
 }
