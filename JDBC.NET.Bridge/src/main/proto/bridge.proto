@@ -10,8 +10,10 @@ service BridgeService {
 
 message LoadDriverRequest {
 	string path = 1;
+	string className = 2;
 }
 
 message LoadDriverResponse {
-  string version = 1;
+  int32 majorVersion = 1;
+  int32 minorVersion = 2;
 }

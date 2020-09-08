@@ -25,7 +25,7 @@ namespace JDBC.NET.Data
         #endregion
 
         #region Properties
-        public BridgeService.BridgeServiceClient BridgeService { get; private set; }
+        private BridgeService.BridgeServiceClient BridgeService { get; set; }
         #endregion
 
         #region Private Methods
@@ -37,6 +37,19 @@ namespace JDBC.NET.Data
 
             _channel = new Channel($"127.0.0.1:{port}", ChannelCredentials.Insecure);
             BridgeService = new BridgeService.BridgeServiceClient(_channel);
+        }
+        #endregion
+
+        #region Public Methods
+        public LoadDriverResponse LoadDriver(string path, string className)
+        {
+            Initialize();
+
+            return BridgeService.loadDriver(new LoadDriverRequest
+            {
+                Path = path,
+                ClassName = className
+            });
         }
         #endregion
 
