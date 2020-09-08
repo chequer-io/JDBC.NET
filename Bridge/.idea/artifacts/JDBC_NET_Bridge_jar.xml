@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="JDBC.NET.Bridge:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/JDBC_NET_Bridge_jar</output-path>
+    <root id="archive" name="JDBC.NET.Bridge.jar">
+      <element id="module-output" name="JDBC.NET.Bridge" />
+    </root>
+  </artifact>
+</component>

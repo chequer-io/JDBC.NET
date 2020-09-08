@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option csharp_namespace = "JDBC.NET.Proto";
+
+package bridge;
+
+service BridgeService {
+    rpc initialize (InitializeRequest) returns (InitializeResponse);
+}
+
+message InitializeRequest {
+	string version = 1;
+}
+
+message InitializeResponse {
+}
