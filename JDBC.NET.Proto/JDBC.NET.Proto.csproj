@@ -13,8 +13,10 @@
       </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <Protobuf Include="**/*.proto" />
-  </ItemGroup>
+    <ItemGroup>
+        <Protobuf Include="..\JDBC.NET.Bridge\src\main\proto\**\*.proto" ProtoRoot="..\JDBC.NET.Bridge\src\main\proto">
+            <Link>%(RecursiveDir)%(FileName)%(Extension)</Link>
+        </Protobuf>
+    </ItemGroup>
   
 </Project>
