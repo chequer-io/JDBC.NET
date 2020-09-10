@@ -1,18 +1,17 @@
 package com.chequer.jdbcnet.bridge.service;
 
-import bridge.Bridge;
-import bridge.BridgeServiceGrpc;
+import driver.Driver;
+import driver.DriverServiceGrpc;
 import io.grpc.stub.StreamObserver;
 
 import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.sql.Driver;
 
-public class BridgeServiceImpl extends BridgeServiceGrpc.BridgeServiceImplBase {
+public class DriverServiceImpl extends DriverServiceGrpc.DriverServiceImplBase {
     @Override
-    public void loadDriver(Bridge.LoadDriverRequest request, StreamObserver<Bridge.LoadDriverResponse> responseObserver) {
+    public void loadDriver(Driver.LoadDriverRequest request, StreamObserver<Driver.LoadDriverResponse> responseObserver) {
         try {
             // Load JAR from path
             File file = new File(request.getPath());
@@ -23,10 +22,10 @@ public class BridgeServiceImpl extends BridgeServiceGrpc.BridgeServiceImplBase {
 
             // Load Class from driver
             Class clazz = Class.forName(request.getClassName());
-            Driver driver = (Driver)clazz.newInstance();
+            java.sql.Driver driver = (java.sql.Driver)clazz.newInstance();
 
             // Return response
-            Bridge.LoadDriverResponse response = Bridge.LoadDriverResponse.newBuilder()
+            Driver.LoadDriverResponse response = Driver.LoadDriverResponse.newBuilder()
                     .setMajorVersion(driver.getMajorVersion())
                     .setMinorVersion(driver.getMinorVersion())
                     .build();

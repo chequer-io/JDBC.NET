@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Grpc.Core;
-using J2NET;
-using JDBC.NET.Data.Utilities;
-using JDBC.NET.Proto;
+using JDBC.NET.Data.Models;
 
 namespace JDBC.NET.Data
 {
@@ -19,17 +15,8 @@ namespace JDBC.NET.Data
         private string _database;
         private string _serverVersion;
         private ConnectionState _state = ConnectionState.Closed;
+        private JdbcBridge _bridge;
         private bool _isDisposed;
-        private Process _process;
-        private Channel _channel;
-        #endregion
-
-        #region Constants
-#if !DEBUG
-        private const string bridgeJar = @"JDBC.NET.Bridge-1.0.jar";
-#else
-        private const string bridgeJar = @"..\..\..\..\JDBC.NET.Bridge\target\JDBC.NET.Bridge-1.0-SNAPSHOT-jar-with-dependencies.jar";
-#endif
         #endregion
 
         #region Properties
@@ -74,8 +61,6 @@ namespace JDBC.NET.Data
         private JdbcConnectionStringBuilder ConnectionStringBuilder { get; set; } = new JdbcConnectionStringBuilder();
 
         public override ConnectionState State => _state;
-
-        private BridgeService.BridgeServiceClient BridgeService { get; set; }
         #endregion
 
         #region Constructor
@@ -119,14 +104,7 @@ namespace JDBC.NET.Data
                 {
                     _state = ConnectionState.Connecting;
 
-                    InitializeBridge();
-                    CheckBridgeOpen();
-
-                    var loadDriverResponse = BridgeService.loadDriver(new LoadDriverRequest
-                    {
-                        Path = ConnectionStringBuilder.DriverPath,
-                        ClassName = ConnectionStringBuilder.DriverClass
-                    });
+                    _bridge = JdbcBridgePool.Lease(ConnectionStringBuilder.DriverPath, ConnectionStringBuilder.DriverClass);
 
                     _state = ConnectionState.Open;
 
@@ -161,6 +139,7 @@ namespace JDBC.NET.Data
         public override async Task CloseAsync()
         {
             CheckDispose();
+            JdbcBridgePool.Release(_bridge.Key);
 
             await Task.Run(() =>
             {
@@ -219,30 +198,12 @@ namespace JDBC.NET.Data
         #endregion
 
         #region Private Methods
-        private void InitializeBridge()
-        {
-            var port = PortUtility.GetFreeTcpPort();
-            _process = JavaRuntime.ExecuteJar(bridgeJar, $"-p {port}");
-            PortUtility.WaitForOpen(port);
-
-            _channel = new Channel($"127.0.0.1:{port}", ChannelCredentials.Insecure);
-            BridgeService = new BridgeService.BridgeServiceClient(_channel);
-        }
-
         private void CheckOpen()
         {
             CheckDispose();
 
             if (_state == ConnectionState.Closed || _state == ConnectionState.Broken)
                 throw new InvalidOperationException("Connection is not open.");
-        }
-
-        private void CheckBridgeOpen()
-        {
-            CheckDispose();
-
-            if (_process == null || _channel == null || BridgeService == null)
-                throw new InvalidOperationException("Bridge is not open.");
         }
 
         private void CheckDispose()
@@ -259,12 +220,6 @@ namespace JDBC.NET.Data
                 return;
 
             Close();
-
-            _channel?.ShutdownAsync().Wait();
-
-            _process?.Kill();
-            _process?.Dispose();
-
             _isDisposed = true;
 
             base.Dispose(disposing);

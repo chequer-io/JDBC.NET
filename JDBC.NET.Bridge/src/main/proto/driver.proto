@@ -2,9 +2,9 @@ syntax = "proto3";
 
 option csharp_namespace = "JDBC.NET.Proto";
 
-package bridge;
+package driver;
 
-service BridgeService {
+service DriverService {
     rpc loadDriver (LoadDriverRequest) returns (LoadDriverResponse);
 }
 
