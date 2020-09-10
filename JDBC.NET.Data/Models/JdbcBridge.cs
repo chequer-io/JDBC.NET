@@ -12,7 +12,6 @@ namespace JDBC.NET.Data.Models
         #region Fields
         private Channel _channel;
         private Process _process;
-        private DriverService.DriverServiceClient _driverService;
         #endregion
 
         #region Constants
@@ -25,6 +24,10 @@ namespace JDBC.NET.Data.Models
         #endregion
 
         #region Properties
+        public DriverService.DriverServiceClient Driver { get; private set; }
+
+        public DatabaseService.DatabaseServiceClient Database { get; private set; }
+
         public string Key => GenerateKey(DriverPath, DriverClass);
 
         public string DriverPath { get; }
@@ -67,9 +70,10 @@ namespace JDBC.NET.Data.Models
             PortUtility.WaitForOpen(port);
 
             _channel = new Channel($"{host}:{port}", ChannelCredentials.Insecure);
-            _driverService = new DriverService.DriverServiceClient(_channel);
+            Driver = new DriverService.DriverServiceClient(_channel);
+            Database = new DatabaseService.DatabaseServiceClient(_channel);
 
-            var loadDriverResponse = _driverService.loadDriver(new LoadDriverRequest
+            var loadDriverResponse = Driver.loadDriver(new LoadDriverRequest
             {
                 Path = DriverPath,
                 ClassName = DriverClass

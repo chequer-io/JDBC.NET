@@ -18,10 +18,10 @@ namespace JDBC.NET.Data
             set => SetValue(nameof(DriverClass), value);
         }
 
-        public string JdbcConnectionString
+        public string JdbcUrl
         {
-            get => GetValue<string>(nameof(JdbcConnectionString));
-            set => SetValue(nameof(JdbcConnectionString), value);
+            get => GetValue<string>(nameof(JdbcUrl));
+            set => SetValue(nameof(JdbcUrl), value);
         }
         #endregion
 

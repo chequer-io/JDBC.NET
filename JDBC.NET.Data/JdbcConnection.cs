@@ -1,53 +1,41 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using JDBC.NET.Data.Models;
+using JDBC.NET.Proto;
 
 namespace JDBC.NET.Data
 {
     public class JdbcConnection : DbConnection, ICloneable
     {
         #region Fields
-        private string _schema;
         private string _database;
         private string _serverVersion;
+        private string _connectionId;
         private ConnectionState _state = ConnectionState.Closed;
         private JdbcBridge _bridge;
         private bool _isDisposed;
         #endregion
 
         #region Properties
-        public string Schema => _schema;
+        public override string Database
+        {
+            get
+            {
+                CheckOpen();
+                return _database;
+            }
+        }
 
-        public override string Database => _database;
-
-        public override string DataSource => ConnectionStringBuilder.JdbcConnectionString;
+        public override string DataSource => ConnectionStringBuilder.JdbcUrl;
 
         public override string ServerVersion
         {
             get
             {
                 CheckOpen();
-
-                if (_serverVersion == null)
-                {
-                    try
-                    {
-                        var command = CreateDbCommand("SELECT node_version FROM system.runtime.nodes");
-                        var version = command.ExecuteScalar().ToString();
-                        var match = Regex.Match(version, @"\d+\.\d+");
-
-                        _serverVersion = match.Success ? match.Value : $"0.{version}";
-                    }
-                    catch
-                    {
-                        return "0.0";
-                    }
-                }
-
                 return _serverVersion;
             }
         }
@@ -106,12 +94,16 @@ namespace JDBC.NET.Data
 
                     _bridge = JdbcBridgePool.Lease(ConnectionStringBuilder.DriverPath, ConnectionStringBuilder.DriverClass);
 
-                    _state = ConnectionState.Open;
+                    var response = _bridge.Database.openConnection(new OpenConnectionRequest
+                    {
+                        JdbcUrl = ConnectionStringBuilder.JdbcUrl
+                    });
 
-                    /*
-                    ChangeDatabase(_prestoClientSessionConfig.Catalog);
-                    ChangeSchema(_prestoClientSessionConfig.Schema);
-                    */
+                    _connectionId = response.Id;
+                    _serverVersion = response.DatabaseProductVersion;
+                    _database = response.Catalog;
+
+                    _state = ConnectionState.Open;
                 }
                 catch
                 {
@@ -139,12 +131,21 @@ namespace JDBC.NET.Data
         public override async Task CloseAsync()
         {
             CheckDispose();
-            JdbcBridgePool.Release(_bridge.Key);
 
             await Task.Run(() =>
             {
                 try
                 {
+                    if (_bridge != null)
+                    {
+                        _bridge.Database.closeConnection(new CloseConnectionRequest
+                        {
+                            Id = _connectionId
+                        });
+
+                        JdbcBridgePool.Release(_bridge.Key);
+                    }
+
                     _state = ConnectionState.Closed;
                 }
                 catch
@@ -187,13 +188,6 @@ namespace JDBC.NET.Data
             CheckOpen();
             //_prestoClientSessionConfig.Catalog = databaseName;
             _database = databaseName;
-        }
-
-        public void ChangeSchema(string schemaName)
-        {
-            CheckOpen();
-            //_prestoClientSessionConfig.Schema = schemaName;
-            _schema = schemaName;
         }
         #endregion
 

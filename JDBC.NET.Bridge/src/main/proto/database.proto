@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option csharp_namespace = "JDBC.NET.Proto";
+
+package com.chequer.jdbc.net.database;
+
+service DatabaseService {
+  rpc openConnection (OpenConnectionRequest) returns (OpenConnectionResponse);
+  rpc closeConnection (CloseConnectionRequest) returns (CloseConnectionResponse);
+}
+
+message OpenConnectionRequest {
+  string jdbcUrl = 1;
+}
+
+message OpenConnectionResponse {
+  string id = 1;
+  string catalog = 2;
+  string databaseProductName = 3;
+  string databaseProductVersion = 4;
+  int32 databaseMajorVersion = 5;
+  int32 databaseMinorVersion = 6;
+}
+
+message CloseConnectionRequest {
+  string id = 1;
+}
+
+message CloseConnectionResponse {
+}

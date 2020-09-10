@@ -1,5 +1,6 @@
 package com.chequer.jdbcnet.bridge;
 
+import com.chequer.jdbcnet.bridge.service.DatabaseServiceImpl;
 import com.chequer.jdbcnet.bridge.service.DriverServiceImpl;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -14,6 +15,7 @@ public class Main {
     private static void start(int port) throws IOException {
         server = ServerBuilder.forPort(port)
                 .addService(new DriverServiceImpl())
+                .addService(new DatabaseServiceImpl())
                 .build()
                 .start();
 

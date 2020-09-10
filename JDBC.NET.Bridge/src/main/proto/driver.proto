@@ -2,7 +2,7 @@ syntax = "proto3";
 
 option csharp_namespace = "JDBC.NET.Proto";
 
-package driver;
+package com.chequer.jdbc.net.driver;
 
 service DriverService {
     rpc loadDriver (LoadDriverRequest) returns (LoadDriverResponse);
