@@ -2,11 +2,14 @@ syntax = "proto3";
 
 option csharp_namespace = "JDBC.NET.Proto";
 
-package com.chequer.jdbc.net.database;
+import "common.proto";
+
+package proto.database;
 
 service DatabaseService {
   rpc openConnection (OpenConnectionRequest) returns (OpenConnectionResponse);
-  rpc closeConnection (CloseConnectionRequest) returns (CloseConnectionResponse);
+  rpc closeConnection (CloseConnectionRequest) returns (Empty);
+  rpc changeCatalog (ChangeCatalogRequest) returns (Empty);
 }
 
 message OpenConnectionRequest {
@@ -14,7 +17,7 @@ message OpenConnectionRequest {
 }
 
 message OpenConnectionResponse {
-  string id = 1;
+  string connectionId = 1;
   string catalog = 2;
   string databaseProductName = 3;
   string databaseProductVersion = 4;
@@ -23,8 +26,10 @@ message OpenConnectionResponse {
 }
 
 message CloseConnectionRequest {
-  string id = 1;
+  string connectionId = 1;
 }
 
-message CloseConnectionResponse {
+message ChangeCatalogRequest {
+  string connectionId = 1;
+  string catalogName = 2;
 }

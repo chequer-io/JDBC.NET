@@ -1,8 +1,9 @@
 package com.chequer.jdbcnet.bridge.service;
 
-import com.chequer.jdbc.net.database.Database;
-import com.chequer.jdbc.net.database.DatabaseServiceGrpc;
 import io.grpc.stub.StreamObserver;
+import proto.Common;
+import proto.database.Database;
+import proto.database.DatabaseServiceGrpc;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -23,7 +24,7 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
             DatabaseMetaData metaData = connection.getMetaData();
 
             Database.OpenConnectionResponse response = Database.OpenConnectionResponse.newBuilder()
-                    .setId(id)
+                    .setConnectionId(id)
                     .setCatalog(connection.getCatalog())
                     .setDatabaseMajorVersion(metaData.getDatabaseMajorVersion())
                     .setDatabaseMinorVersion(metaData.getDatabaseMinorVersion())
@@ -39,19 +40,40 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
     }
 
     @Override
-    public void closeConnection(Database.CloseConnectionRequest request, StreamObserver<Database.CloseConnectionResponse> responseObserver) {
+    public void closeConnection(Database.CloseConnectionRequest request, StreamObserver<Common.Empty> responseObserver) {
         try {
-            if (!_connections.containsKey(request.getId())) {
+            if (!_connections.containsKey(request.getConnectionId())) {
                 responseObserver.onError(new Exception("Connection could not be found."));
                 return;
             }
 
-            Connection connection = _connections.get(request.getId());
+            Connection connection = _connections.get(request.getConnectionId());
             connection.close();
 
-            _connections.remove(request.getId());
+            _connections.remove(request.getConnectionId());
 
-            Database.CloseConnectionResponse response = Database.CloseConnectionResponse.newBuilder()
+            Common.Empty response = Common.Empty.newBuilder()
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void changeCatalog(Database.ChangeCatalogRequest request, StreamObserver<Common.Empty> responseObserver) {
+        try {
+            if (!_connections.containsKey(request.getConnectionId())) {
+                responseObserver.onError(new Exception("Connection could not be found."));
+                return;
+            }
+
+            Connection connection = _connections.get(request.getConnectionId());
+            connection.setCatalog(request.getCatalogName());
+
+            Common.Empty response = Common.Empty.newBuilder()
                     .build();
 
             responseObserver.onNext(response);

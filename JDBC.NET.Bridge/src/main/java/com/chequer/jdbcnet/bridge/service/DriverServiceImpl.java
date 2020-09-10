@@ -1,8 +1,8 @@
 package com.chequer.jdbcnet.bridge.service;
 
-import com.chequer.jdbc.net.driver.Driver;
-import com.chequer.jdbc.net.driver.DriverServiceGrpc;
 import io.grpc.stub.StreamObserver;
+import proto.driver.Driver;
+import proto.driver.DriverServiceGrpc;
 
 import java.io.File;
 import java.lang.reflect.Method;

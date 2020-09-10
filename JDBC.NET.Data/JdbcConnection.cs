@@ -99,7 +99,7 @@ namespace JDBC.NET.Data
                         JdbcUrl = ConnectionStringBuilder.JdbcUrl
                     });
 
-                    _connectionId = response.Id;
+                    _connectionId = response.ConnectionId;
                     _serverVersion = response.DatabaseProductVersion;
                     _database = response.Catalog;
 
@@ -140,7 +140,7 @@ namespace JDBC.NET.Data
                     {
                         _bridge.Database.closeConnection(new CloseConnectionRequest
                         {
-                            Id = _connectionId
+                            ConnectionId = _connectionId
                         });
 
                         JdbcBridgePool.Release(_bridge.Key);
@@ -186,7 +186,13 @@ namespace JDBC.NET.Data
         public override void ChangeDatabase(string databaseName)
         {
             CheckOpen();
-            //_prestoClientSessionConfig.Catalog = databaseName;
+
+            _bridge.Database.changeCatalog(new ChangeCatalogRequest
+            {
+                ConnectionId = _connectionId,
+                CatalogName = databaseName
+            });
+
             _database = databaseName;
         }
         #endregion
