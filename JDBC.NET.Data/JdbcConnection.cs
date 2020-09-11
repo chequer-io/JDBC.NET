@@ -219,7 +219,9 @@ namespace JDBC.NET.Data
             if (_isDisposed)
                 return;
 
-            Close();
+            if (disposing)
+                Close();
+
             _isDisposed = true;
 
             base.Dispose(disposing);

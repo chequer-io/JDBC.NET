@@ -1,6 +1,8 @@
 package com.chequer.jdbcnet.bridge.service;
 
 import com.chequer.jdbcnet.bridge.manager.ObjectManager;
+import com.google.protobuf.Empty;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import proto.Common;
 import proto.reader.Reader;
@@ -28,7 +30,29 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
 
             responseObserver.onCompleted();
         } catch (Exception e) {
-            responseObserver.onError(e);
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
+        }
+    }
+
+    @Override
+    public void closeResultSet(Reader.CloseResultSetRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            ResultSet resultSet = ObjectManager.getResultSet(request.getResultSetId());
+            resultSet.close();
+
+            ObjectManager.removeResultSet(request.getResultSetId());
+
+            Empty response = Empty.newBuilder()
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
         }
     }
 }

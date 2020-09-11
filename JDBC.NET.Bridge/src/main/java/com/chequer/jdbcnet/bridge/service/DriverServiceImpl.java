@@ -1,5 +1,6 @@
 package com.chequer.jdbcnet.bridge.service;
 
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import proto.driver.Driver;
 import proto.driver.DriverServiceGrpc;
@@ -33,7 +34,9 @@ public class DriverServiceImpl extends DriverServiceGrpc.DriverServiceImplBase {
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (Exception e) {
-            responseObserver.onError(e);
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
         }
     }
 }

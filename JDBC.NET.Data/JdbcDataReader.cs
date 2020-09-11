@@ -266,6 +266,15 @@ namespace JDBC.NET.Data
         public override void Close()
         {
             _enumerator?.Dispose();
+
+            if (!(Command.Connection is JdbcConnection jdbcConnection))
+                throw new InvalidOperationException();
+
+            jdbcConnection.Bridge.Reader.closeResultSet(new CloseResultSetRequest
+            {
+                ResultSetId = Response.ResultSetId
+            });
+
             _schemaTable = null;
             _isClosed = true;
         }
@@ -276,9 +285,6 @@ namespace JDBC.NET.Data
         {
             if (_isDisposed)
                 return;
-
-            if (disposing)
-                Close();
 
             _isDisposed = true;
             base.Dispose(disposing);

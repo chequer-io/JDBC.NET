@@ -2,14 +2,20 @@ syntax = "proto3";
 
 option csharp_namespace = "JDBC.NET.Proto";
 
+import "google/protobuf/empty.proto";
 import "common.proto";
 
 package proto.reader;
 
 service ReaderService {
   rpc readResultSet (ReadResultSetRequest) returns (stream JdbcDataRow);
+  rpc closeResultSet (CloseResultSetRequest) returns (google.protobuf.Empty);
 }
 
 message ReadResultSetRequest {
+  string resultSetId = 1;
+}
+
+message CloseResultSetRequest {
   string resultSetId = 1;
 }

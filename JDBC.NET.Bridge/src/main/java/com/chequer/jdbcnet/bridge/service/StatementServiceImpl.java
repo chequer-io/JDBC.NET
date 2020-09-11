@@ -2,6 +2,7 @@ package com.chequer.jdbcnet.bridge.service;
 
 import com.chequer.jdbcnet.bridge.manager.ObjectManager;
 import com.google.protobuf.Empty;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import proto.Common;
 import proto.statement.Statement;
@@ -26,7 +27,9 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (Exception e) {
-            responseObserver.onError(e);
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
         }
     }
 
@@ -55,7 +58,9 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
             responseObserver.onNext(responseBuilder.build());
             responseObserver.onCompleted();
         } catch (Exception e) {
-            responseObserver.onError(e);
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
         }
     }
 
@@ -73,7 +78,9 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
             responseObserver.onNext(response);
             responseObserver.onCompleted();
         } catch (Exception e) {
-            responseObserver.onError(e);
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
         }
     }
 }
