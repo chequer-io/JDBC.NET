@@ -14,7 +14,7 @@ namespace JDBC.NET.Data
 
         private ExecuteStatementResponse Response { get; }
 
-        private AsyncServerStreamingCall<JdbcDataRow> StreamingCall { get; }
+        private AsyncDuplexStreamingCall<ReadResultSetRequest, JdbcDataRow> StreamingCall { get; }
         #endregion
 
         #region Constructor
@@ -23,10 +23,7 @@ namespace JDBC.NET.Data
             Connection = connection;
             Response = response;
 
-            StreamingCall = Connection.Bridge.Reader.readResultSet(new ReadResultSetRequest
-            {
-                ResultSetId = Response.ResultSetId
-            });
+            StreamingCall = Connection.Bridge.Reader.readResultSet();
         }
         #endregion
 
@@ -37,6 +34,11 @@ namespace JDBC.NET.Data
 
         public bool MoveNext()
         {
+            StreamingCall.RequestStream.WriteAsync(new ReadResultSetRequest
+            {
+                ResultSetId = Response.ResultSetId
+            });
+
             var result = StreamingCall.ResponseStream.MoveNext().Result;
 
             if (result)
@@ -54,6 +56,7 @@ namespace JDBC.NET.Data
         #region IDisposable
         public void Dispose()
         {
+            StreamingCall.RequestStream.CompleteAsync().Wait();
             StreamingCall?.Dispose();
         }
         #endregion
