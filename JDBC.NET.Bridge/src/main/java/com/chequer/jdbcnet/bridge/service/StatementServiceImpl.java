@@ -3,6 +3,7 @@ package com.chequer.jdbcnet.bridge.service;
 import com.chequer.jdbcnet.bridge.manager.ObjectManager;
 import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
+import proto.Common;
 import proto.statement.Statement;
 import proto.statement.StatementServiceGrpc;
 
@@ -43,10 +44,11 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
                     .setHasRows(resultSet.isBeforeFirst());
 
             for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++ ) {
-                responseBuilder.addColumns(Statement.DataColumn.newBuilder()
+                responseBuilder.addColumns(Common.JdbcDataColumn.newBuilder()
                         .setOrdinal(i - 1)
-                        .setName(resultSetMetaData.getColumnName(i))
-                        .setType(resultSetMetaData.getColumnTypeName(i))
+                        .setColumnName(resultSetMetaData.getColumnName(i))
+                        .setDataTypeName(resultSetMetaData.getColumnTypeName(i))
+                        .setDataTypeCode(resultSetMetaData.getColumnType(i))
                         .build());
             }
 

@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option csharp_namespace = "JDBC.NET.Proto";
+
+package proto;
+
+message JdbcDataColumn {
+  int32 ordinal = 1;
+  string columnName = 2;
+  string dataTypeName = 3;
+  int32 dataTypeCode = 4;
+}
+
+message JdbcDataRow {
+  repeated string items = 1;
+}

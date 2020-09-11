@@ -120,11 +120,11 @@ namespace JDBC.NET.Data
                 foreach (var column in Response.Columns)
                 {
                     _schemaTable.Rows.Add(
-                        column.Name,
+                        column.ColumnName,
                         column.Ordinal,
                         true,
                         typeof(object), // TODO : Need to implement type conversion
-                        column.Type
+                        column.DataTypeName
                     );
                 }
             }
@@ -142,7 +142,7 @@ namespace JDBC.NET.Data
             CheckOpen();
 
             for (var i = 0; i < FieldCount; i++)
-                if (Response.Columns[i].Name == name)
+                if (Response.Columns[i].ColumnName == name)
                     return i;
 
             return -1;

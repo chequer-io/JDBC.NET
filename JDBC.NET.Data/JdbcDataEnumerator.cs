@@ -7,14 +7,14 @@ using JDBC.NET.Proto;
 
 namespace JDBC.NET.Data
 {
-    public class JdbcDataEnumerator : IEnumerator<DataRow>
+    public class JdbcDataEnumerator : IEnumerator<JdbcDataRow>
     {
         #region Properties
         private JdbcConnection Connection { get; }
 
         private ExecuteStatementResponse Response { get; }
 
-        private AsyncServerStreamingCall<DataRow> StreamingCall { get; }
+        private AsyncServerStreamingCall<JdbcDataRow> StreamingCall { get; }
         #endregion
 
         #region Constructor
@@ -31,7 +31,7 @@ namespace JDBC.NET.Data
         #endregion
 
         #region IEnumerator
-        public DataRow Current { get; private set; }
+        public JdbcDataRow Current { get; private set; }
 
         object IEnumerator.Current => Current;
 
