@@ -3,6 +3,8 @@ using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
+using Grpc.Core;
+using JDBC.NET.Data.Exceptions;
 using JDBC.NET.Proto;
 
 namespace JDBC.NET.Data
@@ -152,13 +154,20 @@ namespace JDBC.NET.Data
             if (!(Connection is JdbcConnection jdbcConnection))
                 throw new InvalidOperationException();
 
-            var response = await jdbcConnection.Bridge.Statement.executeStatementAsync(new ExecuteStatementRequest
+            try
             {
-                StatementId = StatementId,
-                Sql = CommandText
-            });
+                var response = await jdbcConnection.Bridge.Statement.executeStatementAsync(new ExecuteStatementRequest
+                {
+                    StatementId = StatementId,
+                    Sql = CommandText
+                });
 
-            return new JdbcDataReader(this, response);
+                return new JdbcDataReader(this, response);
+            }
+            catch (RpcException ex)
+            {
+                throw new JdbcException(ex);
+            }
         }
 
         public override void Cancel()
