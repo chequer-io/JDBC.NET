@@ -21,15 +21,18 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
                     ResultSet resultSet = ObjectManager.getResultSet(readResultSetRequest.getResultSetId());
                     ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 
-                    if (resultSet.next()) {
-                        Common.JdbcDataRow.Builder responseBuilder = Common.JdbcDataRow.newBuilder();
-
-                        for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++ ) {
-                            responseBuilder.addItems(resultSet.getString(i));
-                        }
-
-                        responseObserver.onNext(responseBuilder.build());
+                    if (!resultSet.next()) {
+                        onCompleted();
+                        return;
                     }
+
+                    Common.JdbcDataRow.Builder responseBuilder = Common.JdbcDataRow.newBuilder();
+
+                    for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++ ) {
+                        responseBuilder.addItems(resultSet.getString(i));
+                    }
+
+                    responseObserver.onNext(responseBuilder.build());
                 } catch (Exception e) {
                     onError(e);
                 }
