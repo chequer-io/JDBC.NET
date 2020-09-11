@@ -26,6 +26,8 @@ namespace JDBC.NET.Data.Models
         #region Properties
         public DriverService.DriverServiceClient Driver { get; private set; }
 
+        public StatementService.StatementServiceClient Statement { get; private set; }
+
         public DatabaseService.DatabaseServiceClient Database { get; private set; }
 
         public string Key => GenerateKey(DriverPath, DriverClass);
@@ -70,7 +72,9 @@ namespace JDBC.NET.Data.Models
             PortUtility.WaitForOpen(port);
 
             _channel = new Channel($"{host}:{port}", ChannelCredentials.Insecure);
+
             Driver = new DriverService.DriverServiceClient(_channel);
+            Statement = new StatementService.StatementServiceClient(_channel);
             Database = new DatabaseService.DatabaseServiceClient(_channel);
 
             var loadDriverResponse = Driver.loadDriver(new LoadDriverRequest

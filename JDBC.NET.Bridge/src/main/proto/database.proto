@@ -2,14 +2,14 @@ syntax = "proto3";
 
 option csharp_namespace = "JDBC.NET.Proto";
 
-import "common.proto";
+import "google/protobuf/empty.proto";
 
 package proto.database;
 
 service DatabaseService {
   rpc openConnection (OpenConnectionRequest) returns (OpenConnectionResponse);
-  rpc closeConnection (CloseConnectionRequest) returns (Empty);
-  rpc changeCatalog (ChangeCatalogRequest) returns (Empty);
+  rpc closeConnection (CloseConnectionRequest) returns (google.protobuf.Empty);
+  rpc changeCatalog (ChangeCatalogRequest) returns (google.protobuf.Empty);
 }
 
 message OpenConnectionRequest {

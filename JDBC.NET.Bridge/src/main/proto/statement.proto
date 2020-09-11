@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option csharp_namespace = "JDBC.NET.Proto";
+
+import "google/protobuf/empty.proto";
+
+package proto.statement;
+
+service StatementService {
+  rpc createStatement (CreateStatementRequest) returns (CreateStatementResponse);
+  rpc closeStatement (CloseStatementRequest) returns (google.protobuf.Empty);
+}
+
+message CreateStatementRequest {
+  string connectionId = 1;
+}
+
+message CreateStatementResponse {
+  string statementId = 1;
+}
+
+message CloseStatementRequest {
+  string statementId = 1;
+}

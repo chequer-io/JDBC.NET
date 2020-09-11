@@ -13,9 +13,7 @@ namespace JDBC.NET.Data
         #region Fields
         private string _database;
         private string _serverVersion;
-        private string _connectionId;
         private ConnectionState _state = ConnectionState.Closed;
-        private JdbcBridge _bridge;
         private bool _isDisposed;
         #endregion
 
@@ -49,6 +47,10 @@ namespace JDBC.NET.Data
         private JdbcConnectionStringBuilder ConnectionStringBuilder { get; set; } = new JdbcConnectionStringBuilder();
 
         public override ConnectionState State => _state;
+
+        internal string ConnectionId { get; private set; }
+
+        internal JdbcBridge Bridge { get; private set; }
         #endregion
 
         #region Constructor
@@ -92,14 +94,14 @@ namespace JDBC.NET.Data
                 {
                     _state = ConnectionState.Connecting;
 
-                    _bridge = JdbcBridgePool.Lease(ConnectionStringBuilder.DriverPath, ConnectionStringBuilder.DriverClass);
+                    Bridge = JdbcBridgePool.Lease(ConnectionStringBuilder.DriverPath, ConnectionStringBuilder.DriverClass);
 
-                    var response = _bridge.Database.openConnection(new OpenConnectionRequest
+                    var response = Bridge.Database.openConnection(new OpenConnectionRequest
                     {
                         JdbcUrl = ConnectionStringBuilder.JdbcUrl
                     });
 
-                    _connectionId = response.ConnectionId;
+                    ConnectionId = response.ConnectionId;
                     _serverVersion = response.DatabaseProductVersion;
                     _database = response.Catalog;
 
@@ -136,14 +138,14 @@ namespace JDBC.NET.Data
             {
                 try
                 {
-                    if (_bridge != null)
+                    if (Bridge != null)
                     {
-                        _bridge.Database.closeConnection(new CloseConnectionRequest
+                        Bridge.Database.closeConnection(new CloseConnectionRequest
                         {
-                            ConnectionId = _connectionId
+                            ConnectionId = ConnectionId
                         });
 
-                        JdbcBridgePool.Release(_bridge.Key);
+                        JdbcBridgePool.Release(Bridge.Key);
                     }
 
                     _state = ConnectionState.Closed;
@@ -160,14 +162,16 @@ namespace JDBC.NET.Data
         {
             CheckOpen();
 
-            /*
-            return new PrestoCommand
+            var response = Bridge.Statement.createStatement(new CreateStatementRequest
             {
-                Connection = this
-            };
-            */
+                ConnectionId = ConnectionId
+            });
 
-            throw new NotImplementedException();
+            return new JdbcCommand
+            {
+                Connection = this,
+                CommandId = response.StatementId
+            };
         }
 
         public DbCommand CreateDbCommand(string commandText)
@@ -187,9 +191,9 @@ namespace JDBC.NET.Data
         {
             CheckOpen();
 
-            _bridge.Database.changeCatalog(new ChangeCatalogRequest
+            Bridge.Database.changeCatalog(new ChangeCatalogRequest
             {
-                ConnectionId = _connectionId,
+                ConnectionId = ConnectionId,
                 CatalogName = databaseName
             });
 
