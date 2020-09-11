@@ -167,11 +167,7 @@ namespace JDBC.NET.Data
                 ConnectionId = ConnectionId
             });
 
-            return new JdbcCommand
-            {
-                Connection = this,
-                StatementId = response.StatementId
-            };
+            return new JdbcCommand(this, response.StatementId);
         }
 
         public DbCommand CreateDbCommand(string commandText)

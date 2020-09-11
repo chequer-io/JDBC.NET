@@ -8,6 +8,7 @@ import proto.statement.StatementServiceGrpc;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 
 public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceImplBase {
     @Override
@@ -33,13 +34,23 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
         try {
             java.sql.Statement statement = ObjectManager.getStatement(request.getStatementId());
             ResultSet resultSet = statement.executeQuery(request.getSql());
+            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
             String resultSetId = ObjectManager.putResultSet(resultSet);
 
-            Statement.ExecuteStatementResponse response = Statement.ExecuteStatementResponse.newBuilder()
+            Statement.ExecuteStatementResponse.Builder responseBuilder = Statement.ExecuteStatementResponse.newBuilder()
                     .setResultSetId(resultSetId)
-                    .build();
+                    .setRecordsAffected(statement.getUpdateCount())
+                    .setHasRows(resultSet.isBeforeFirst());
 
-            responseObserver.onNext(response);
+            for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++ ) {
+                responseBuilder.addColumns(Statement.DataColumn.newBuilder()
+                        .setOrdinal(i - 1)
+                        .setName(resultSetMetaData.getColumnName(i))
+                        .setType(resultSetMetaData.getColumnTypeName(i))
+                        .build());
+            }
+
+            responseObserver.onNext(responseBuilder.build());
             responseObserver.onCompleted();
         } catch (Exception e) {
             responseObserver.onError(e);

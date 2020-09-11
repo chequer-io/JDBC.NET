@@ -38,7 +38,15 @@ namespace JDBC.NET.Data
             set => throw new NotSupportedException();
         }
 
-        internal string StatementId { get; set; }
+        private string StatementId { get; }
+        #endregion
+
+        #region Constructor
+        internal JdbcCommand(JdbcConnection connection, string statementId)
+        {
+            Connection = connection;
+            StatementId = statementId;
+        }
         #endregion
 
         #region Public Methods
@@ -150,11 +158,7 @@ namespace JDBC.NET.Data
                 Sql = CommandText
             });
 
-            /*
-            return new PrestoDataReader(this, response);
-            */
-
-            throw new NotImplementedException();
+            return new JdbcDataReader(response);
         }
 
         public override void Cancel()

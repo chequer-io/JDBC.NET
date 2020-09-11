@@ -27,8 +27,17 @@ message ExecuteStatementRequest {
 
 message ExecuteStatementResponse {
   string resultSetId = 1;
+  int32 recordsAffected = 2;
+  bool hasRows = 4;
+  repeated DataColumn columns = 5;
 }
 
 message CloseStatementRequest {
   string statementId = 1;
+}
+
+message DataColumn {
+  int32 ordinal = 1;
+  string name = 2;
+  string type = 3;
 }
