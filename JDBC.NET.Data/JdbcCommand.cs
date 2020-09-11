@@ -38,7 +38,7 @@ namespace JDBC.NET.Data
             set => throw new NotSupportedException();
         }
 
-        internal string CommandId { get; set; }
+        internal string StatementId { get; set; }
         #endregion
 
         #region Public Methods
@@ -144,9 +144,13 @@ namespace JDBC.NET.Data
             if (!(Connection is JdbcConnection jdbcConnection))
                 throw new InvalidOperationException();
 
+            var response = await jdbcConnection.Bridge.Statement.executeStatementAsync(new ExecuteStatementRequest
+            {
+                StatementId = StatementId,
+                Sql = CommandText
+            });
+
             /*
-            Bridge.Statmenet.Execute
-            var response = await jdbcConnection.Bridge.Database
             return new PrestoDataReader(this, response);
             */
 
@@ -169,7 +173,7 @@ namespace JDBC.NET.Data
 
             jdbcConnection.Bridge.Statement.closeStatement(new CloseStatementRequest
             {
-                StatementId = CommandId
+                StatementId = StatementId
             });
 
             _isDisposed = true;

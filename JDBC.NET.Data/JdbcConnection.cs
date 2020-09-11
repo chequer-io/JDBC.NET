@@ -170,7 +170,7 @@ namespace JDBC.NET.Data
             return new JdbcCommand
             {
                 Connection = this,
-                CommandId = response.StatementId
+                StatementId = response.StatementId
             };
         }
 

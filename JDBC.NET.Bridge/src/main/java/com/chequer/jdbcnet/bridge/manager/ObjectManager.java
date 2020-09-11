@@ -1,6 +1,7 @@
 package com.chequer.jdbcnet.bridge.manager;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,6 +10,7 @@ public class ObjectManager {
     //region Fields
     private static final ConcurrentHashMap<String, Statement> _statements = new ConcurrentHashMap<String, Statement>();
     private static final ConcurrentHashMap<String, Connection> _connections = new ConcurrentHashMap<String, Connection>();
+    private static final ConcurrentHashMap<String, ResultSet> _resultSets = new ConcurrentHashMap<String, ResultSet>();
     //endregion
 
     //region Statement Method
@@ -42,6 +44,23 @@ public class ObjectManager {
 
     public static void removeConnection(String connectionId) {
         _connections.remove(connectionId);
+    }
+    //endregion
+
+    //region ResultSet Method
+    public static String putResultSet(ResultSet resultSet) {
+        String id = UUID.randomUUID().toString();
+        _resultSets.put(id, resultSet);
+
+        return id;
+    }
+
+    public static ResultSet getResultSet(String resultSetId) {
+        return _resultSets.get(resultSetId);
+    }
+
+    public static void removeResultSet(String resultSetId) {
+        _resultSets.remove(resultSetId);
     }
     //endregion
 }

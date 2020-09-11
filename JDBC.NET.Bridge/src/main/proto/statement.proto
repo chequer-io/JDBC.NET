@@ -8,6 +8,7 @@ package proto.statement;
 
 service StatementService {
   rpc createStatement (CreateStatementRequest) returns (CreateStatementResponse);
+  rpc executeStatement (ExecuteStatementRequest) returns (ExecuteStatementResponse);
   rpc closeStatement (CloseStatementRequest) returns (google.protobuf.Empty);
 }
 
@@ -17,6 +18,15 @@ message CreateStatementRequest {
 
 message CreateStatementResponse {
   string statementId = 1;
+}
+
+message ExecuteStatementRequest {
+  string statementId = 1;
+  string sql = 2;
+}
+
+message ExecuteStatementResponse {
+  string resultSetId = 1;
 }
 
 message CloseStatementRequest {

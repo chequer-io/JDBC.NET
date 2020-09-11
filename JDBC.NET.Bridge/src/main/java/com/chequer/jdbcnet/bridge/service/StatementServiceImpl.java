@@ -7,6 +7,7 @@ import proto.statement.Statement;
 import proto.statement.StatementServiceGrpc;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 
 public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceImplBase {
     @Override
@@ -18,6 +19,24 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
 
             Statement.CreateStatementResponse response = Statement.CreateStatementResponse.newBuilder()
                     .setStatementId(statementId)
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(e);
+        }
+    }
+
+    @Override
+    public void executeStatement(Statement.ExecuteStatementRequest request, StreamObserver<Statement.ExecuteStatementResponse> responseObserver) {
+        try {
+            java.sql.Statement statement = ObjectManager.getStatement(request.getStatementId());
+            ResultSet resultSet = statement.executeQuery(request.getSql());
+            String resultSetId = ObjectManager.putResultSet(resultSet);
+
+            Statement.ExecuteStatementResponse response = Statement.ExecuteStatementResponse.newBuilder()
+                    .setResultSetId(resultSetId)
                     .build();
 
             responseObserver.onNext(response);
