@@ -13,10 +13,12 @@ namespace JDBC.NET.Data
         private bool _isClosed;
         private bool _isDisposed;
         private DataTable _schemaTable;
-        private readonly IEnumerator<List<dynamic>> _enumerator;
+        private readonly JdbcDataEnumerator _enumerator;
         #endregion
 
         #region Properties
+        private JdbcCommand Command { get; }
+
         private ExecuteStatementResponse Response { get; }
 
         public override int FieldCount => Response.Columns.Count;
@@ -49,29 +51,33 @@ namespace JDBC.NET.Data
         #endregion
 
         #region Constructor
-        internal JdbcDataReader(ExecuteStatementResponse response)
+        internal JdbcDataReader(JdbcCommand command, ExecuteStatementResponse response)
         {
+            Command = command;
             Response = response;
-            //_enumerator = response.Data.GetEnumerator();
+
+            if (!(Command.Connection is JdbcConnection jdbcConnection))
+                throw new InvalidOperationException();
+
+            _enumerator = new JdbcDataEnumerator(jdbcConnection, response);
         }
         #endregion
 
         #region Public Methods
         public override object GetValue(int ordinal)
         {
-            return null;
-
-            /*
             CheckOpen();
 
             if (_enumerator.Current == null)
                 throw new ArgumentNullException();
 
-            var value = _enumerator.Current[ordinal];
+            var value = _enumerator.Current.Items[ordinal];
 
             if (value == null)
                 return DBNull.Value;
 
+            // TODO : Need to implement type conversion
+            /*
             var fieldType = GetFieldType(ordinal);
 
             if (value.GetType() != fieldType)
@@ -85,9 +91,9 @@ namespace JDBC.NET.Data
                     return value;
                 }
             }
+            */
 
             return value;
-            */
         }
 
         public override int GetValues(object[] values)

@@ -5,13 +5,13 @@ option csharp_namespace = "JDBC.NET.Proto";
 package proto.reader;
 
 service ReaderService {
-  rpc readResultSet (ReadResultSetRequest) returns (stream ReadResultSetResponse);
+  rpc readResultSet (ReadResultSetRequest) returns (stream DataRow);
 }
 
 message ReadResultSetRequest {
   string resultSetId = 1;
 }
 
-message ReadResultSetResponse {
-  string value = 1;
+message DataRow {
+  repeated string items = 1;
 }

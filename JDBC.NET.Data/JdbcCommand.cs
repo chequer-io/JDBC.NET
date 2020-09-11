@@ -158,7 +158,7 @@ namespace JDBC.NET.Data
                 Sql = CommandText
             });
 
-            return new JdbcDataReader(response);
+            return new JdbcDataReader(this, response);
         }
 
         public override void Cancel()

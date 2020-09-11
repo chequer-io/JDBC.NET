@@ -26,6 +26,8 @@ namespace JDBC.NET.Data.Models
         #region Properties
         public DriverService.DriverServiceClient Driver { get; private set; }
 
+        public ReaderService.ReaderServiceClient Reader { get; private set; }
+
         public StatementService.StatementServiceClient Statement { get; private set; }
 
         public DatabaseService.DatabaseServiceClient Database { get; private set; }
@@ -74,6 +76,7 @@ namespace JDBC.NET.Data.Models
             _channel = new Channel($"{host}:{port}", ChannelCredentials.Insecure);
 
             Driver = new DriverService.DriverServiceClient(_channel);
+            Reader = new ReaderService.ReaderServiceClient(_channel);
             Statement = new StatementService.StatementServiceClient(_channel);
             Database = new DatabaseService.DatabaseServiceClient(_channel);
 
