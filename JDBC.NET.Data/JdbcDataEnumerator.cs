@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Grpc.Core;
 using JDBC.NET.Proto;
 
@@ -37,7 +36,7 @@ namespace JDBC.NET.Data
             StreamingCall.RequestStream.WriteAsync(new ReadResultSetRequest
             {
                 ResultSetId = Response.ResultSetId
-            });
+            }).Wait();
 
             var result = StreamingCall.ResponseStream.MoveNext().Result;
 
