@@ -83,8 +83,6 @@ namespace JDBC.NET.Data
                 for (var i = 0; i < orderedParameters.Count; i++)
                 {
                     var parameter = orderedParameters[i];
-                    Console.WriteLine("             >>> PARAMETER : " + parameter.ParameterName + " = " + parameter.Value);
-                    Console.WriteLine("             >>> INDEX : " + i);
 
                     jdbcConnection.Bridge.Statement.setParameter(new SetParameterRequest
                     {
@@ -250,6 +248,8 @@ namespace JDBC.NET.Data
             {
                 StatementId = StatementId
             });
+
+            StatementId = null;
         }
         #endregion
 
