@@ -48,7 +48,7 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
             for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++ ) {
                 responseBuilder.addColumns(Common.JdbcDataColumn.newBuilder()
                         .setOrdinal(i - 1)
-                        .setColumnName(resultSetMetaData.getColumnName(i))
+                        .setColumnName(resultSetMetaData.getColumnLabel(i))
                         .setDataTypeName(resultSetMetaData.getColumnTypeName(i))
                         .setDataTypeCode(resultSetMetaData.getColumnType(i))
                         .build());
