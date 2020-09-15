@@ -29,7 +29,12 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
                     Common.JdbcDataRow.Builder responseBuilder = Common.JdbcDataRow.newBuilder();
 
                     for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++ ) {
-                        responseBuilder.addItems(resultSet.getString(i));
+                        String value = resultSet.getString(i);
+
+                        if (value == null)
+                            value = "";
+
+                        responseBuilder.addItems(value);
                     }
 
                     responseObserver.onNext(responseBuilder.build());
