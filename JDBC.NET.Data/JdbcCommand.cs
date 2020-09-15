@@ -19,10 +19,6 @@ namespace JDBC.NET.Data
         private JdbcDataReader _dataReader;
         #endregion
 
-        #region Constants
-        private const string bindingParameter = "@";
-        #endregion
-
         #region Properties
         public override string CommandText { get; set; }
 
@@ -65,7 +61,40 @@ namespace JDBC.NET.Data
         #region Public Methods
         public override void Prepare()
         {
-            throw new NotSupportedException();
+            if (IsPrepared)
+                return;
+
+            if (!(Connection is JdbcConnection jdbcConnection))
+                throw new InvalidOperationException();
+
+            if (Parameters.Count <= 0)
+            {
+                CreateStatement(CommandText);
+            }
+            else
+            {
+                List<JdbcParameter> orderedParameters = Parameters
+                    .OfType<JdbcParameter>()
+                    .OrderBy(x => CommandText.IndexOf(x.ParameterName, StringComparison.Ordinal))
+                    .ToList();
+
+                CreateStatement(orderedParameters.Aggregate(CommandText, (x, parameter) => x.Replace(parameter.ParameterName, "?")));
+
+                for (var i = 0; i < orderedParameters.Count; i++)
+                {
+                    var parameter = orderedParameters[i];
+                    Console.WriteLine("             >>> PARAMETER : " + parameter.ParameterName + " = " + parameter.Value);
+                    Console.WriteLine("             >>> INDEX : " + i);
+
+                    jdbcConnection.Bridge.Statement.setParameter(new SetParameterRequest
+                    {
+                        StatementId = StatementId,
+                        Index = i + 1,
+                        Value = parameter.Value.ToString(),
+                        Type = ParameterTypeUtility.Convert(parameter.DbType)
+                    });
+                }
+            }
         }
 
         public override int ExecuteNonQuery()
@@ -171,32 +200,7 @@ namespace JDBC.NET.Data
             if (IsPrepared)
                 CloseStatement();
 
-            if (Parameters.Count <= 0)
-            {
-                CreateStatement(CommandText);
-            }
-            else
-            {
-                List<JdbcParameter> orderedParameters = Parameters
-                    .OfType<JdbcParameter>()
-                    .OrderBy(x => CommandText.IndexOf(bindingParameter + x.ParameterName, StringComparison.Ordinal))
-                    .ToList();
-
-                CreateStatement(orderedParameters.Aggregate(CommandText, (x, parameter) => x.Replace(bindingParameter + parameter.ParameterName, "?")));
-
-                for (var i = 0; i < orderedParameters.Count; i++)
-                {
-                    var parameter = orderedParameters[i];
-
-                    await jdbcConnection.Bridge.Statement.setParameterAsync(new SetParameterRequest
-                    {
-                        StatementId = StatementId,
-                        Index = i + 1,
-                        Value = parameter.Value.ToString(),
-                        Type = ParameterTypeUtility.Convert(parameter.DbType)
-                    });
-                }
-            }
+            await PrepareAsync(cancellationToken);
 
             try
             {
