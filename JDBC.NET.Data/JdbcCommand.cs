@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using JDBC.NET.Data.Exceptions;
+using JDBC.NET.Data.Utilities;
 using JDBC.NET.Proto;
 
 namespace JDBC.NET.Data
@@ -13,6 +16,11 @@ namespace JDBC.NET.Data
     {
         #region Fields
         private bool _isDisposed;
+        private JdbcDataReader _dataReader;
+        #endregion
+
+        #region Constants
+        private const string bindingParameter = "@";
         #endregion
 
         #region Properties
@@ -30,7 +38,9 @@ namespace JDBC.NET.Data
 
         protected override DbConnection DbConnection { get; set; }
 
-        protected override DbParameterCollection DbParameterCollection { get; }
+        protected override DbParameterCollection DbParameterCollection => Parameters;
+
+        public new JdbcParameterCollection Parameters { get; } = new JdbcParameterCollection();
 
         protected override DbTransaction DbTransaction { get; set; }
 
@@ -40,14 +50,15 @@ namespace JDBC.NET.Data
             set => throw new NotSupportedException();
         }
 
-        private string StatementId { get; }
+        private bool IsPrepared => StatementId != null;
+
+        private string StatementId { get; set; }
         #endregion
 
         #region Constructor
-        internal JdbcCommand(JdbcConnection connection, string statementId)
+        internal JdbcCommand(JdbcConnection connection)
         {
             Connection = connection;
-            StatementId = statementId;
         }
         #endregion
 
@@ -127,7 +138,7 @@ namespace JDBC.NET.Data
 
         protected override DbParameter CreateDbParameter()
         {
-            throw new NotImplementedException();
+            return new JdbcParameter();
         }
 
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
@@ -154,15 +165,48 @@ namespace JDBC.NET.Data
             if (!(Connection is JdbcConnection jdbcConnection))
                 throw new InvalidOperationException();
 
+            if (_dataReader?.IsClosed == false)
+                throw new InvalidOperationException("The previously executed DataReader has not been closed yet.");
+
+            if (IsPrepared)
+                CloseStatement();
+
+            if (Parameters.Count <= 0)
+            {
+                CreateStatement(CommandText);
+            }
+            else
+            {
+                List<JdbcParameter> orderedParameters = Parameters
+                    .OfType<JdbcParameter>()
+                    .OrderBy(x => CommandText.IndexOf(bindingParameter + x.ParameterName, StringComparison.Ordinal))
+                    .ToList();
+
+                CreateStatement(orderedParameters.Aggregate(CommandText, (x, parameter) => x.Replace(bindingParameter + parameter.ParameterName, "?")));
+
+                for (var i = 0; i < orderedParameters.Count; i++)
+                {
+                    var parameter = orderedParameters[i];
+
+                    await jdbcConnection.Bridge.Statement.setParameterAsync(new SetParameterRequest
+                    {
+                        StatementId = StatementId,
+                        Index = i + 1,
+                        Value = parameter.Value.ToString(),
+                        Type = ParameterTypeUtility.Convert(parameter.DbType)
+                    });
+                }
+            }
+
             try
             {
                 var response = await jdbcConnection.Bridge.Statement.executeStatementAsync(new ExecuteStatementRequest
                 {
-                    StatementId = StatementId,
-                    Sql = CommandText
+                    StatementId = StatementId
                 });
 
-                return new JdbcDataReader(this, response);
+                _dataReader = new JdbcDataReader(this, response);
+                return _dataReader;
             }
             catch (RpcException ex)
             {
@@ -175,10 +219,24 @@ namespace JDBC.NET.Data
         }
         #endregion
 
-        #region IDisposable
-        protected override void Dispose(bool disposing)
+        #region Private Methods
+        private void CreateStatement(string sql)
         {
-            if (_isDisposed)
+            if (!(Connection is JdbcConnection jdbcConnection))
+                throw new InvalidOperationException();
+
+            var response = jdbcConnection.Bridge.Statement.createStatement(new CreateStatementRequest
+            {
+                ConnectionId = jdbcConnection.ConnectionId,
+                Sql = sql
+            });
+
+            StatementId = response.StatementId;
+        }
+
+        private void CloseStatement()
+        {
+            if (!IsPrepared)
                 return;
 
             if (!(Connection is JdbcConnection jdbcConnection))
@@ -188,7 +246,16 @@ namespace JDBC.NET.Data
             {
                 StatementId = StatementId
             });
+        }
+        #endregion
 
+        #region IDisposable
+        protected override void Dispose(bool disposing)
+        {
+            if (_isDisposed)
+                return;
+
+            CloseStatement();
             _isDisposed = true;
 
             base.Dispose(disposing);

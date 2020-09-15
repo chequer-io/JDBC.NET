@@ -158,24 +158,23 @@ namespace JDBC.NET.Data
             });
         }
 
-        protected override DbCommand CreateDbCommand()
+        public new JdbcCommand CreateCommand()
         {
-            CheckOpen();
-
-            var response = Bridge.Statement.createStatement(new CreateStatementRequest
-            {
-                ConnectionId = ConnectionId
-            });
-
-            return new JdbcCommand(this, response.StatementId);
+            return (JdbcCommand)base.CreateCommand();
         }
 
-        public DbCommand CreateDbCommand(string commandText)
+        public JdbcCommand CreateCommand(string commandText)
         {
-            var command = CreateDbCommand();
+            var command = CreateCommand();
             command.CommandText = commandText;
 
             return command;
+        }
+
+        protected override DbCommand CreateDbCommand()
+        {
+            CheckOpen();
+            return new JdbcCommand(this);
         }
 
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)

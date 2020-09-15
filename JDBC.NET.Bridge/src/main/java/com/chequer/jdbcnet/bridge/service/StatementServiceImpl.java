@@ -8,16 +8,15 @@ import proto.Common;
 import proto.statement.Statement;
 import proto.statement.StatementServiceGrpc;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
+import java.math.BigDecimal;
+import java.sql.*;
 
 public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceImplBase {
     @Override
     public void createStatement(Statement.CreateStatementRequest request, StreamObserver<Statement.CreateStatementResponse> responseObserver) {
         try {
             Connection connection = ObjectManager.getConnection(request.getConnectionId());
-            java.sql.Statement statement = connection.createStatement();
+            PreparedStatement statement = connection.prepareStatement(request.getSql());
             String statementId = ObjectManager.putStatement(statement);
 
             Statement.CreateStatementResponse response = Statement.CreateStatementResponse.newBuilder()
@@ -36,8 +35,8 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
     @Override
     public void executeStatement(Statement.ExecuteStatementRequest request, StreamObserver<Statement.ExecuteStatementResponse> responseObserver) {
         try {
-            java.sql.Statement statement = ObjectManager.getStatement(request.getStatementId());
-            ResultSet resultSet = statement.executeQuery(request.getSql());
+            PreparedStatement statement = ObjectManager.getStatement(request.getStatementId());
+            ResultSet resultSet = statement.executeQuery();
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
             String resultSetId = ObjectManager.putResultSet(resultSet);
 
@@ -67,10 +66,67 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
     @Override
     public void closeStatement(Statement.CloseStatementRequest request, StreamObserver<Empty> responseObserver) {
         try {
-            java.sql.Statement statement = ObjectManager.getStatement(request.getStatementId());
+            PreparedStatement statement = ObjectManager.getStatement(request.getStatementId());
             statement.close();
 
             ObjectManager.removeStatement(request.getStatementId());
+
+            Empty response = Empty.newBuilder()
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
+        }
+    }
+
+    @Override
+    public void setParameter(Statement.SetParameterRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            PreparedStatement statement = ObjectManager.getStatement(request.getStatementId());
+
+            int index = request.getIndex();
+            String value = request.getValue();
+
+            switch (request.getType()) {
+                case INT:
+                    statement.setInt(index, Integer.parseInt(value));
+                    break;
+
+                case LONG:
+                    statement.setLong(index, Long.parseLong(value));
+                    break;
+
+                case SHORT:
+                    statement.setShort(index, Short.parseShort(value));
+                    break;
+
+                case FLOAT:
+                    statement.setFloat(index, Float.parseFloat(value));
+                    break;
+
+                case DOUBLE:
+                    statement.setDouble(index, Double.parseDouble(value));
+                    break;
+
+                case STRING:
+                    statement.setString(index, value);
+                    break;
+
+                case BOOLEAN:
+                    statement.setBoolean(index, Boolean.parseBoolean(value));
+
+                case TIME:
+                    statement.setTime(index, Time.valueOf(value));
+                    break;
+
+                case DATE:
+                    statement.setDate(index, Date.valueOf(value));
+                    break;
+            }
 
             Empty response = Empty.newBuilder()
                     .build();

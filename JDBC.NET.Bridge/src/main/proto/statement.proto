@@ -11,10 +11,12 @@ service StatementService {
   rpc createStatement (CreateStatementRequest) returns (CreateStatementResponse);
   rpc executeStatement (ExecuteStatementRequest) returns (ExecuteStatementResponse);
   rpc closeStatement (CloseStatementRequest) returns (google.protobuf.Empty);
+  rpc setParameter (SetParameterRequest) returns (google.protobuf.Empty);
 }
 
 message CreateStatementRequest {
   string connectionId = 1;
+  string sql = 2;
 }
 
 message CreateStatementResponse {
@@ -23,7 +25,6 @@ message CreateStatementResponse {
 
 message ExecuteStatementRequest {
   string statementId = 1;
-  string sql = 2;
 }
 
 message ExecuteStatementResponse {
@@ -35,4 +36,23 @@ message ExecuteStatementResponse {
 
 message CloseStatementRequest {
   string statementId = 1;
+}
+
+enum ParameterType {
+  INT = 0;
+  LONG = 1;
+  SHORT = 2;
+  FLOAT = 3;
+  DOUBLE = 4;
+  STRING = 5;
+  BOOLEAN = 6;
+  TIME = 7;
+  DATE = 8;
+}
+
+message SetParameterRequest {
+  string statementId = 1;
+  int32 index = 3;
+  string value = 4;
+  ParameterType type = 5;
 }
