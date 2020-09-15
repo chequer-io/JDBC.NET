@@ -138,7 +138,7 @@ namespace JDBC.NET.Data
             {
                 try
                 {
-                    if (Bridge != null)
+                    if (_state != ConnectionState.Closed && Bridge != null)
                     {
                         Bridge.Database.closeConnection(new CloseConnectionRequest
                         {
