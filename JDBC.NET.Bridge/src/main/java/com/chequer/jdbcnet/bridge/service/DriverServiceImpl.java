@@ -22,8 +22,8 @@ public class DriverServiceImpl extends DriverServiceGrpc.DriverServiceImplBase {
             method.invoke(classLoader, file.toURI().toURL());
 
             // Load Class from driver
-            Class clazz = Class.forName(request.getClassName());
-            java.sql.Driver driver = (java.sql.Driver)clazz.newInstance();
+            Class<?> clazz = Class.forName(request.getClassName());
+            java.sql.Driver driver = (java.sql.Driver)clazz.getDeclaredConstructor().newInstance();
 
             // Return response
             Driver.LoadDriverResponse response = Driver.LoadDriverResponse.newBuilder()
