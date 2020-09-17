@@ -70,7 +70,7 @@ namespace JDBC.NET.Data.Models
         private void Initialize()
         {
             var port = PortUtility.GetFreeTcpPort();
-            _process = JavaRuntime.ExecuteJar(jarPath, $"-p {port}");
+            _process = JavaRuntime.Execute($"-XX:G1PeriodicGCInterval=5000 -jar {jarPath} -p {port}");
             PortUtility.WaitForOpen(port);
 
             _channel = new Channel($"{host}:{port}", ChannelCredentials.Insecure);
