@@ -16,7 +16,7 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
     public void createStatement(Statement.CreateStatementRequest request, StreamObserver<Statement.CreateStatementResponse> responseObserver) {
         try {
             Connection connection = ObjectManager.getConnection(request.getConnectionId());
-            PreparedStatement statement = connection.prepareStatement(request.getSql());
+            PreparedStatement statement = connection.prepareStatement(request.getSql(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             String statementId = ObjectManager.putStatement(statement);
 
             Statement.CreateStatementResponse response = Statement.CreateStatementResponse.newBuilder()
@@ -36,6 +36,8 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
     public void executeStatement(Statement.ExecuteStatementRequest request, StreamObserver<Statement.ExecuteStatementResponse> responseObserver) {
         try {
             PreparedStatement statement = ObjectManager.getStatement(request.getStatementId());
+            statement.setFetchSize(request.getFetchSize());
+
             ResultSet resultSet = statement.executeQuery();
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
             String resultSetId = ObjectManager.putResultSet(resultSet);

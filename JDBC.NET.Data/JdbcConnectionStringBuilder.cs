@@ -6,6 +6,12 @@ namespace JDBC.NET.Data
     public class JdbcConnectionStringBuilder : DbConnectionStringBuilder
     {
         #region Properties
+        public int FetchSize
+        {
+            get => GetValue<int>(nameof(FetchSize));
+            set => SetValue(nameof(FetchSize), value);
+        }
+
         public string DriverPath
         {
             get => GetValue<string>(nameof(DriverPath));
@@ -28,6 +34,7 @@ namespace JDBC.NET.Data
         #region Constructor
         public JdbcConnectionStringBuilder()
         {
+            FetchSize = 10;
         }
 
         public JdbcConnectionStringBuilder(string connectionString) : this()

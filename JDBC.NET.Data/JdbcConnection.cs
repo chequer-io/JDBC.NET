@@ -44,7 +44,7 @@ namespace JDBC.NET.Data
             set => ConnectionStringBuilder = new JdbcConnectionStringBuilder(value);
         }
 
-        private JdbcConnectionStringBuilder ConnectionStringBuilder { get; set; } = new JdbcConnectionStringBuilder();
+        internal JdbcConnectionStringBuilder ConnectionStringBuilder { get; set; } = new JdbcConnectionStringBuilder();
 
         public override ConnectionState State => _state;
 

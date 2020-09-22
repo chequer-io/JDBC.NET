@@ -20,6 +20,8 @@ namespace JDBC.NET.Data
         #endregion
 
         #region Properties
+        public int FetchSize { get; set; }
+
         public override string CommandText { get; set; }
 
         public override int CommandTimeout { get; set; }
@@ -55,6 +57,7 @@ namespace JDBC.NET.Data
         internal JdbcCommand(JdbcConnection connection)
         {
             Connection = connection;
+            FetchSize = connection.ConnectionStringBuilder.FetchSize;
         }
         #endregion
 
@@ -204,7 +207,8 @@ namespace JDBC.NET.Data
             {
                 var response = await jdbcConnection.Bridge.Statement.executeStatementAsync(new ExecuteStatementRequest
                 {
-                    StatementId = StatementId
+                    StatementId = StatementId,
+                    FetchSize = FetchSize
                 });
 
                 _dataReader = new JdbcDataReader(this, response);

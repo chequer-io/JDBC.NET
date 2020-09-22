@@ -25,6 +25,7 @@ message CreateStatementResponse {
 
 message ExecuteStatementRequest {
   string statementId = 1;
+  int32 fetchSize = 2;
 }
 
 message ExecuteStatementResponse {

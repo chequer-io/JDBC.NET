@@ -16,6 +16,8 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
     public void openConnection(Database.OpenConnectionRequest request, StreamObserver<Database.OpenConnectionResponse> responseObserver) {
         try {
             Connection connection = DriverManager.getConnection(request.getJdbcUrl());
+            connection.setAutoCommit(false);
+
             String connectionId = ObjectManager.putConnection(connection);
 
             DatabaseMetaData metaData = connection.getMetaData();
