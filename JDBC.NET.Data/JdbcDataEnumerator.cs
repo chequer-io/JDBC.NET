@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Google.Protobuf.Collections;
 using Grpc.Core;
 using JDBC.NET.Proto;
 
@@ -8,12 +9,17 @@ namespace JDBC.NET.Data
 {
     public class JdbcDataEnumerator : IEnumerator<JdbcDataRow>
     {
+        #region Fields
+        private ReadResultSetResponse _currentResponse;
+        private IEnumerator<JdbcDataRow> _currentChunk;
+        #endregion
+
         #region Properties
         private JdbcConnection Connection { get; }
 
         private ExecuteStatementResponse Response { get; }
 
-        private AsyncDuplexStreamingCall<ReadResultSetRequest, JdbcDataRow> StreamingCall { get; }
+        private AsyncDuplexStreamingCall<ReadResultSetRequest, ReadResultSetResponse> StreamingCall { get; }
         #endregion
 
         #region Constructor
@@ -33,17 +39,32 @@ namespace JDBC.NET.Data
 
         public bool MoveNext()
         {
-            StreamingCall.RequestStream.WriteAsync(new ReadResultSetRequest
+            if (_currentChunk == null)
             {
-                ResultSetId = Response.ResultSetId
-            }).Wait();
+                StreamingCall.RequestStream.WriteAsync(new ReadResultSetRequest
+                {
+                    ChunkSize = Connection.ConnectionStringBuilder.ChunkSize,
+                    ResultSetId = Response.ResultSetId
+                }).Wait();
 
-            var result = StreamingCall.ResponseStream.MoveNext().Result;
+                if (!StreamingCall.ResponseStream.MoveNext().Result)
+                    return false;
 
-            if (result)
-                Current = StreamingCall.ResponseStream.Current;
+                _currentResponse = StreamingCall.ResponseStream.Current;
+                _currentChunk = _currentResponse.Rows.GetEnumerator();
+            }
 
-            return result;
+            if (_currentChunk?.MoveNext() == false)
+            {
+                if (_currentResponse.IsCompleted)
+                    return false;
+
+                _currentChunk = null;
+                return MoveNext();
+            }
+
+            Current = _currentChunk?.Current;
+            return true;
         }
 
         public void Reset()
@@ -55,6 +76,7 @@ namespace JDBC.NET.Data
         #region IDisposable
         public void Dispose()
         {
+            _currentChunk?.Dispose();
             StreamingCall.RequestStream.CompleteAsync().Wait();
             StreamingCall?.Dispose();
         }

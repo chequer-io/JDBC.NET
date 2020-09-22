@@ -12,6 +12,12 @@ namespace JDBC.NET.Data
             set => SetValue(nameof(FetchSize), value);
         }
 
+        public int ChunkSize
+        {
+            get => GetValue<int>(nameof(ChunkSize));
+            set => SetValue(nameof(ChunkSize), value);
+        }
+
         public string DriverPath
         {
             get => GetValue<string>(nameof(DriverPath));
@@ -35,6 +41,7 @@ namespace JDBC.NET.Data
         public JdbcConnectionStringBuilder()
         {
             FetchSize = 10;
+            ChunkSize = 1000;
         }
 
         public JdbcConnectionStringBuilder(string connectionString) : this()

@@ -10,34 +10,45 @@ import proto.reader.ReaderServiceGrpc;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 
 public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
     @Override
-    public StreamObserver<Reader.ReadResultSetRequest> readResultSet(final StreamObserver<Common.JdbcDataRow> responseObserver) {
+    public StreamObserver<Reader.ReadResultSetRequest> readResultSet(final StreamObserver<Reader.ReadResultSetResponse> responseObserver) {
         return new StreamObserver<Reader.ReadResultSetRequest>() {
             public void onNext(Reader.ReadResultSetRequest readResultSetRequest) {
                 try {
                     ResultSet resultSet = ObjectManager.getResultSet(readResultSetRequest.getResultSetId());
                     ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+                    Reader.ReadResultSetResponse.Builder responseBuilder = Reader.ReadResultSetResponse.newBuilder();
 
-                    if (!resultSet.next()) {
-                        onCompleted();
-                        return;
+                    int readCount = 0;
+                    while (resultSet.next()) {
+                        readCount++;
+                        Common.JdbcDataRow.Builder rowBuilder = Common.JdbcDataRow.newBuilder();
+
+                        for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++ ) {
+                            String value = resultSet.getString(i);
+
+                            if (value == null)
+                                value = "";
+
+                            rowBuilder.addItems(value);
+                        }
+
+                        responseBuilder.addRows(rowBuilder.build());
+
+                        if (readCount >= readResultSetRequest.getChunkSize()){
+                            responseObserver.onNext(responseBuilder.build());
+                            return;
+                        }
                     }
 
-                    Common.JdbcDataRow.Builder responseBuilder = Common.JdbcDataRow.newBuilder();
-
-                    for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++ ) {
-                        String value = resultSet.getString(i);
-
-                        if (value == null)
-                            value = "";
-
-                        responseBuilder.addItems(value);
+                    if (readCount > 0) {
+                        responseBuilder.setIsCompleted(true);
+                        responseObserver.onNext(responseBuilder.build());
                     }
 
-                    responseObserver.onNext(responseBuilder.build());
+                    onCompleted();
                 } catch (Exception e) {
                     onError(e);
                 }

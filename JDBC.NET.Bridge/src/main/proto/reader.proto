@@ -8,12 +8,18 @@ import "common.proto";
 package proto.reader;
 
 service ReaderService {
-  rpc readResultSet (stream ReadResultSetRequest) returns (stream JdbcDataRow);
+  rpc readResultSet (stream ReadResultSetRequest) returns (stream ReadResultSetResponse);
   rpc closeResultSet (CloseResultSetRequest) returns (google.protobuf.Empty);
 }
 
 message ReadResultSetRequest {
   string resultSetId = 1;
+  int32 chunkSize = 2;
+}
+
+message ReadResultSetResponse {
+  repeated JdbcDataRow rows = 1;
+  bool isCompleted = 2;
 }
 
 message CloseResultSetRequest {
