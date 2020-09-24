@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using JDBC.NET.Data.Models;
 
 namespace JDBC.NET.Data
@@ -6,10 +7,11 @@ namespace JDBC.NET.Data
     internal static class JdbcBridgePool
     {
         #region Fields
-        private static readonly ConcurrentDictionary<string, JdbcBridgeReference> _bridges = new ConcurrentDictionary<string, JdbcBridgeReference>();
+        private static readonly Dictionary<string, JdbcBridgeReference> _bridges = new Dictionary<string, JdbcBridgeReference>();
         #endregion
 
         #region Public Methods
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public static JdbcBridge Lease(string driverPath, string driverClass)
         {
             var key = JdbcBridge.GenerateKey(driverPath, driverClass);
@@ -21,7 +23,7 @@ namespace JDBC.NET.Data
                     Bridge = JdbcBridge.FromDriver(driverPath, driverClass)
                 };
 
-                _bridges.TryAdd(key, reference);
+                _bridges.Add(key, reference);
             }
 
             reference.Increment();
@@ -29,6 +31,7 @@ namespace JDBC.NET.Data
             return reference.Bridge;
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public static void Release(string key)
         {
             if (_bridges.TryGetValue(key, out var reference))
@@ -37,7 +40,7 @@ namespace JDBC.NET.Data
 
                 if (reference.Count <= 0)
                 {
-                    _bridges.TryRemove(key, out _);
+                    _bridges.Remove(key, out _);
                     reference.Dispose();
                 }
             }
