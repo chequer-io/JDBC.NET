@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Data;
 using System.Data.Common;
+using JDBC.NET.Data.Converters;
+using JDBC.NET.Data.Models;
 using JDBC.NET.Proto;
 
 namespace JDBC.NET.Data
@@ -122,7 +124,7 @@ namespace JDBC.NET.Data
                         column.ColumnName,
                         column.Ordinal,
                         true,
-                        typeof(object), // TODO : Need to implement type conversion
+                        JdbcTypeConverter.ToType((JdbcDataTypeCode)column.DataTypeCode),
                         column.DataTypeName
                     );
                 }
