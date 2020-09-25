@@ -77,24 +77,15 @@ namespace JDBC.NET.Data
             if (value == null)
                 return DBNull.Value;
 
-            // TODO : Need to implement type conversion
-            /*
-            var fieldType = GetFieldType(ordinal);
-
-            if (value.GetType() != fieldType)
+            try
             {
-                try
-                {
-                    return Convert.ChangeType(value, fieldType);
-                }
-                catch (InvalidCastException)
-                {
-                    return value;
-                }
+                var fieldType = GetFieldType(ordinal);
+                return Convert.ChangeType(value, fieldType);
             }
-            */
-
-            return value;
+            catch (InvalidCastException)
+            {
+                return value;
+            }
         }
 
         public override int GetValues(object[] values)
