@@ -17,7 +17,7 @@ namespace JDBC.NET.Data.Models
         #region Constants
         private const string host = "127.0.0.1";
 #if !DEBUG
-        private const string jarPath = @"JDBC.NET.Bridge-1.0.jar";
+        private const string jarPath = @"JDBC.NET.Bridge.jar";
 #else
         private const string jarPath = @"..\..\..\..\JDBC.NET.Bridge\target\JDBC.NET.Bridge-1.0-SNAPSHOT-jar-with-dependencies.jar";
 #endif

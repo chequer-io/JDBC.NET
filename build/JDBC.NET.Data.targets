@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="CopyBridge" BeforeTargets="PreBuildEvent">
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)..\bridge\JDBC.NET.Bridge-1.0-SNAPSHOT-jar-with-dependencies.jar" DestinationFiles="$(OutputPath)\JDBC.NET.Bridge.jar" SkipUnchangedFiles="true" />
+  </Target>
+</Project>
