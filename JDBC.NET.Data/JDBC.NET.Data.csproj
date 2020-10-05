@@ -1,7 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <Description>It is a wrapper that allows you to use JDBC drivers in ADO.NET</Description>
+    <Authors>CHEQUER</Authors>
+    <Company>CHEQUER</Company>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/chequer-io/JDBC.NET</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/chequer-io/JDBC.NET</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,6 +16,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\JDBC.NET.Proto\JDBC.NET.Proto.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
