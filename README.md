@@ -1,12 +1,10 @@
-<img src="https://github.com/chequer-io/JDBC.NET/blob/master/Logo.jpg" width="150px" height="150px" title="JDBC.NET" alt="Logo"></img>
-
 # JDBC.NET
-![Nuget](https://img.shields.io/nuget/v/JDBC.NET.Data)  
+[![Nuget](https://img.shields.io/nuget/v/JDBC.NET.Data)](https://www.nuget.org/packages/JDBC.NET.Data/)  
 It is a wrapper that allows you to use JDBC drivers in ADO.NET
 
 ## Getting Started
 ### 1. Install NuGet package
-Install the latest version of the JDBC.NET.Data package from NuGet.
+Install the latest version of the **JDBC.NET.Data** package from NuGet.
 
 ### 2. Add J2NET Runtime package reference
 Paste the following XML into your Project(*.csproj / .vbproj / .fsproj*) file.
