@@ -3,11 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JDBC.NET.Proto", "JDBC.NET.Proto\JDBC.NET.Proto.csproj", "{16DD6A02-64C0-4F1A-A655-DB1C3CAF4C19}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JDBC.NET.Data", "JDBC.NET.Data\JDBC.NET.Data.csproj", "{AFF8F261-D322-4388-A645-F7743ED5A6BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JDBC.NET.Data", "JDBC.NET.Data\JDBC.NET.Data.csproj", "{AFF8F261-D322-4388-A645-F7743ED5A6BE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JDBC.NET.Sample", "JDBC.NET.Sample\JDBC.NET.Sample.csproj", "{CA0567B4-2D0F-425D-8220-6294E6F65F39}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JDBC.NET.Sample", "JDBC.NET.Sample\JDBC.NET.Sample.csproj", "{CA0567B4-2D0F-425D-8220-6294E6F65F39}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,10 +13,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{16DD6A02-64C0-4F1A-A655-DB1C3CAF4C19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{16DD6A02-64C0-4F1A-A655-DB1C3CAF4C19}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{16DD6A02-64C0-4F1A-A655-DB1C3CAF4C19}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{16DD6A02-64C0-4F1A-A655-DB1C3CAF4C19}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AFF8F261-D322-4388-A645-F7743ED5A6BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AFF8F261-D322-4388-A645-F7743ED5A6BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFF8F261-D322-4388-A645-F7743ED5A6BE}.Release|Any CPU.ActiveCfg = Release|Any CPU

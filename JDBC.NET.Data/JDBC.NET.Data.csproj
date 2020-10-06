@@ -8,14 +8,17 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/chequer-io/JDBC.NET</RepositoryUrl>
     <PackageProjectUrl>https://github.com/chequer-io/JDBC.NET</PackageProjectUrl>
+    <PackageIcon>Logo.jpg</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="J2NET" Version="1.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\JDBC.NET.Proto\JDBC.NET.Proto.csproj" />
+    <PackageReference Include="J2NET" Version="1.1.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.10.1" />
+    <PackageReference Include="Grpc" Version="2.24.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.24.0">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -24,6 +27,12 @@
       <Visible>False</Visible>
       <PackagePath>build</PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+      <Protobuf Include="..\JDBC.NET.Bridge\src\main\proto\**\*.proto" ProtoRoot="..\JDBC.NET.Bridge\src\main\proto">
+          <Link>%(RecursiveDir)Proto\%(FileName)%(Extension)</Link>
+      </Protobuf>
   </ItemGroup>
 
   <ItemGroup>
@@ -36,6 +45,11 @@
 
   <ItemGroup>
     <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+
+    <None Include="..\Logo.jpg">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
