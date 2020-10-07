@@ -50,6 +50,8 @@ namespace JDBC.NET.Data
 
         internal string ConnectionId { get; private set; }
 
+        internal JdbcTransaction CurrentTransaction { get; private set; }
+
         internal JdbcBridge Bridge { get; private set; }
         #endregion
 
@@ -179,7 +181,20 @@ namespace JDBC.NET.Data
 
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
         {
-            throw new NotImplementedException();
+            CheckOpen();
+
+            if (CurrentTransaction?.IsDisposeed == false)
+                throw new InvalidOperationException("A transaction is already in progress. Nested transactions are not supported.");
+
+            Bridge.Database.setAutoCommit(new SetAutoCommitRequest
+            {
+                ConnectionId = ConnectionId,
+                UseAutoCommit = false
+            });
+
+            CurrentTransaction = new JdbcTransaction(this, isolationLevel);
+
+            return CurrentTransaction;
         }
 
         public override void ChangeDatabase(string databaseName)

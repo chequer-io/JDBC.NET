@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ namespace JDBC.NET.Data
         #region Fields
         private bool _isDisposed;
         private JdbcDataReader _dataReader;
+        private JdbcTransaction _dbTransaction;
         #endregion
 
         #region Properties
@@ -40,7 +42,23 @@ namespace JDBC.NET.Data
 
         public new JdbcParameterCollection Parameters { get; } = new JdbcParameterCollection();
 
-        protected override DbTransaction DbTransaction { get; set; }
+        protected override DbTransaction DbTransaction
+        {
+            get => _dbTransaction;
+            set
+            {
+                if (!(value is JdbcTransaction jdbcTransaction))
+                    throw new InvalidOperationException();
+
+                if (!(Connection is JdbcConnection jdbcConnection))
+                    throw new InvalidOperationException();
+
+                if (jdbcConnection.CurrentTransaction != jdbcTransaction)
+                    throw new InvalidDataException("The transaction associated with this command is not the connection's active transaction.");
+
+                _dbTransaction = jdbcTransaction;
+            }
+        }
 
         public override bool DesignTimeVisible
         {

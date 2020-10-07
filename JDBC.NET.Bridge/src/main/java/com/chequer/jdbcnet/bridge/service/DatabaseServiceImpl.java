@@ -77,4 +77,58 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
                     .asRuntimeException());
         }
     }
+
+    @Override
+    public void setAutoCommit(Database.SetAutoCommitRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            Connection connection = ObjectManager.getConnection(request.getConnectionId());
+            connection.setAutoCommit(request.getUseAutoCommit());
+
+            Empty response = Empty.newBuilder()
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
+        }
+    }
+
+    @Override
+    public void rollback(Database.TransactionRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            Connection connection = ObjectManager.getConnection(request.getConnectionId());
+            connection.rollback();
+
+            Empty response = Empty.newBuilder()
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
+        }
+    }
+
+    @Override
+    public void commit(Database.TransactionRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            Connection connection = ObjectManager.getConnection(request.getConnectionId());
+            connection.commit();
+
+            Empty response = Empty.newBuilder()
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
+        }
+    }
 }

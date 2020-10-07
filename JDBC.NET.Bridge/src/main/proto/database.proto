@@ -10,6 +10,9 @@ service DatabaseService {
   rpc openConnection (OpenConnectionRequest) returns (OpenConnectionResponse);
   rpc closeConnection (CloseConnectionRequest) returns (google.protobuf.Empty);
   rpc changeCatalog (ChangeCatalogRequest) returns (google.protobuf.Empty);
+  rpc setAutoCommit (SetAutoCommitRequest) returns (google.protobuf.Empty);
+  rpc rollback (TransactionRequest) returns (google.protobuf.Empty);
+  rpc commit (TransactionRequest) returns (google.protobuf.Empty);
 }
 
 message OpenConnectionRequest {
@@ -32,4 +35,13 @@ message CloseConnectionRequest {
 message ChangeCatalogRequest {
   string connectionId = 1;
   string catalogName = 2;
+}
+
+message SetAutoCommitRequest {
+  string connectionId = 1;
+  bool useAutoCommit = 2;
+}
+
+message TransactionRequest {
+  string connectionId = 1;
 }
