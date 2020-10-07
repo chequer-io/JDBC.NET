@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using Google.Protobuf.Collections;
 using Grpc.Core;
 using JDBC.NET.Proto;
 
@@ -28,7 +27,8 @@ namespace JDBC.NET.Data
             Connection = connection;
             Response = response;
 
-            StreamingCall = Connection.Bridge.Reader.readResultSet();
+            if (!string.IsNullOrEmpty(response.ResultSetId))
+                StreamingCall = Connection.Bridge.Reader.readResultSet();
         }
         #endregion
 
@@ -39,6 +39,9 @@ namespace JDBC.NET.Data
 
         public bool MoveNext()
         {
+            if (StreamingCall == null)
+                return false;
+
             if (_currentChunk == null)
             {
                 StreamingCall.RequestStream.WriteAsync(new ReadResultSetRequest
@@ -77,7 +80,7 @@ namespace JDBC.NET.Data
         public void Dispose()
         {
             _currentChunk?.Dispose();
-            StreamingCall.RequestStream.CompleteAsync().Wait();
+            StreamingCall?.RequestStream.CompleteAsync().Wait();
             StreamingCall?.Dispose();
         }
         #endregion

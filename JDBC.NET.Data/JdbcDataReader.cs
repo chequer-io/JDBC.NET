@@ -262,10 +262,13 @@ namespace JDBC.NET.Data
             if (!(Command.Connection is JdbcConnection jdbcConnection))
                 throw new InvalidOperationException();
 
-            jdbcConnection.Bridge.Reader.closeResultSet(new CloseResultSetRequest
+            if (!string.IsNullOrEmpty(Response.ResultSetId))
             {
-                ResultSetId = Response.ResultSetId
-            });
+                jdbcConnection.Bridge.Reader.closeResultSet(new CloseResultSetRequest
+                {
+                    ResultSetId = Response.ResultSetId
+                });
+            }
 
             _schemaTable = null;
             _isClosed = true;

@@ -38,25 +38,32 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
             PreparedStatement statement = ObjectManager.getStatement(request.getStatementId());
             statement.setFetchSize(request.getFetchSize());
 
-            ResultSet resultSet = statement.executeQuery();
-            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-            String resultSetId = ObjectManager.putResultSet(resultSet);
+            if (!statement.execute()) {
+                Statement.ExecuteStatementResponse.Builder responseBuilder = Statement.ExecuteStatementResponse.newBuilder()
+                        .setRecordsAffected(statement.getUpdateCount());
 
-            Statement.ExecuteStatementResponse.Builder responseBuilder = Statement.ExecuteStatementResponse.newBuilder()
-                    .setResultSetId(resultSetId)
-                    .setRecordsAffected(statement.getUpdateCount())
-                    .setHasRows(resultSet.isBeforeFirst());
+                responseObserver.onNext(responseBuilder.build());
+            } else {
+                ResultSet resultSet = statement.getResultSet();
+                ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+                String resultSetId = ObjectManager.putResultSet(resultSet);
 
-            for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++ ) {
-                responseBuilder.addColumns(Common.JdbcDataColumn.newBuilder()
-                        .setOrdinal(i - 1)
-                        .setColumnName(resultSetMetaData.getColumnLabel(i))
-                        .setDataTypeName(resultSetMetaData.getColumnTypeName(i))
-                        .setDataTypeCode(resultSetMetaData.getColumnType(i))
-                        .build());
+                Statement.ExecuteStatementResponse.Builder responseBuilder = Statement.ExecuteStatementResponse.newBuilder()
+                        .setResultSetId(resultSetId)
+                        .setHasRows(resultSet.isBeforeFirst());
+
+                for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++ ) {
+                    responseBuilder.addColumns(Common.JdbcDataColumn.newBuilder()
+                            .setOrdinal(i - 1)
+                            .setColumnName(resultSetMetaData.getColumnLabel(i))
+                            .setDataTypeName(resultSetMetaData.getColumnTypeName(i))
+                            .setDataTypeCode(resultSetMetaData.getColumnType(i))
+                            .build());
+                }
+
+                responseObserver.onNext(responseBuilder.build());
             }
 
-            responseObserver.onNext(responseBuilder.build());
             responseObserver.onCompleted();
         } catch (Exception e) {
             responseObserver.onError(Status.INTERNAL
