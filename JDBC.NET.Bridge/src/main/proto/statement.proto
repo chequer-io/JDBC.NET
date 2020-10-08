@@ -7,6 +7,18 @@ import "common.proto";
 
 package proto.statement;
 
+enum ParameterType {
+  INT = 0;
+  LONG = 1;
+  SHORT = 2;
+  FLOAT = 3;
+  DOUBLE = 4;
+  STRING = 5;
+  BOOLEAN = 6;
+  TIME = 7;
+  DATE = 8;
+}
+
 service StatementService {
   rpc createStatement (CreateStatementRequest) returns (CreateStatementResponse);
   rpc executeStatement (ExecuteStatementRequest) returns (ExecuteStatementResponse);
@@ -37,18 +49,6 @@ message ExecuteStatementResponse {
 
 message CloseStatementRequest {
   string statementId = 1;
-}
-
-enum ParameterType {
-  INT = 0;
-  LONG = 1;
-  SHORT = 2;
-  FLOAT = 3;
-  DOUBLE = 4;
-  STRING = 5;
-  BOOLEAN = 6;
-  TIME = 7;
-  DATE = 8;
 }
 
 message SetParameterRequest {

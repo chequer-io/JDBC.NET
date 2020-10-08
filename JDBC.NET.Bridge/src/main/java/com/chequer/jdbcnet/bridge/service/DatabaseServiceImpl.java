@@ -97,6 +97,25 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
     }
 
     @Override
+    @SuppressWarnings("MagicConstant")
+    public void setIsolationLevel(Database.SetIsolationLevelRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            Connection connection = ObjectManager.getConnection(request.getConnectionId());
+            connection.setTransactionIsolation(request.getLevelValue());
+
+            Empty response = Empty.newBuilder()
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
+        }
+    }
+
+    @Override
     public void rollback(Database.TransactionRequest request, StreamObserver<Empty> responseObserver) {
         try {
             Connection connection = ObjectManager.getConnection(request.getConnectionId());
