@@ -44,17 +44,17 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        Options options = new Options();
+        var options = new Options();
 
-        Option output = new Option("p", "port", true, "Specifies the port to open.");
+        var output = new Option("p", "port", true, "Specifies the port to open.");
         output.setRequired(true);
         options.addOption(output);
 
-        CommandLineParser parser = new DefaultParser();
+        var parser = new DefaultParser();
 
         try {
-            CommandLine cmd = parser.parse(options, args);
-            String port = cmd.getOptionValue("port");
+            var cmd = parser.parse(options, args);
+            var port = cmd.getOptionValue("port");
 
             start(Integer.parseInt(port));
             System.out.println("JDBC.NET.Bridge is running on port " + port + "...");
@@ -63,9 +63,7 @@ public class Main {
         } catch (ParseException e) {
             System.out.println(e.getMessage());
             System.exit(1);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (InterruptedException | IOException e) {
             e.printStackTrace();
         }
     }

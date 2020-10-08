@@ -16,7 +16,7 @@ public class ObjectManager {
 
     //region Statement Method
     public static String putStatement(PreparedStatement statement) {
-        String id = UUID.randomUUID().toString();
+        var id = UUID.randomUUID().toString();
         _statements.put(id, statement);
 
         return id;
@@ -33,7 +33,7 @@ public class ObjectManager {
 
     //region Connection Method
     public static String putConnection(Connection connection) {
-        String id = UUID.randomUUID().toString();
+        var id = UUID.randomUUID().toString();
         _connections.put(id, connection);
 
         return id;
@@ -50,7 +50,7 @@ public class ObjectManager {
 
     //region ResultSet Method
     public static String putResultSet(ResultSet resultSet) {
-        String id = UUID.randomUUID().toString();
+        var id = UUID.randomUUID().toString();
         _resultSets.put(id, resultSet);
 
         return id;

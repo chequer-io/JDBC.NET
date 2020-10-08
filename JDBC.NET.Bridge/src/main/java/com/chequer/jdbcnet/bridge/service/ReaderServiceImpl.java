@@ -17,17 +17,17 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
         return new StreamObserver<Reader.ReadResultSetRequest>() {
             public void onNext(Reader.ReadResultSetRequest readResultSetRequest) {
                 try {
-                    ResultSet resultSet = ObjectManager.getResultSet(readResultSetRequest.getResultSetId());
-                    ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-                    Reader.ReadResultSetResponse.Builder responseBuilder = Reader.ReadResultSetResponse.newBuilder();
+                    var resultSet = ObjectManager.getResultSet(readResultSetRequest.getResultSetId());
+                    var resultSetMetaData = resultSet.getMetaData();
+                    var responseBuilder = Reader.ReadResultSetResponse.newBuilder();
 
                     int readCount = 0;
                     while (resultSet.next()) {
                         readCount++;
-                        Common.JdbcDataRow.Builder rowBuilder = Common.JdbcDataRow.newBuilder();
+                        var rowBuilder = Common.JdbcDataRow.newBuilder();
 
                         for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++ ) {
-                            String value = resultSet.getString(i);
+                            var value = resultSet.getString(i);
 
                             if (value == null)
                                 value = "";
@@ -69,12 +69,12 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
     @Override
     public void closeResultSet(Reader.CloseResultSetRequest request, StreamObserver<Empty> responseObserver) {
         try {
-            ResultSet resultSet = ObjectManager.getResultSet(request.getResultSetId());
+            var resultSet = ObjectManager.getResultSet(request.getResultSetId());
             resultSet.close();
 
             ObjectManager.removeResultSet(request.getResultSetId());
 
-            Empty response = Empty.newBuilder()
+            var response = Empty.newBuilder()
                     .build();
 
             responseObserver.onNext(response);

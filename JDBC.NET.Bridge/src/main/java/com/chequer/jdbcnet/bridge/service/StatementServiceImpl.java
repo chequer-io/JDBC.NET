@@ -15,11 +15,11 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
     @Override
     public void createStatement(Statement.CreateStatementRequest request, StreamObserver<Statement.CreateStatementResponse> responseObserver) {
         try {
-            Connection connection = ObjectManager.getConnection(request.getConnectionId());
-            PreparedStatement statement = connection.prepareStatement(request.getSql(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-            String statementId = ObjectManager.putStatement(statement);
+            var connection = ObjectManager.getConnection(request.getConnectionId());
+            var statement = connection.prepareStatement(request.getSql(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            var statementId = ObjectManager.putStatement(statement);
 
-            Statement.CreateStatementResponse response = Statement.CreateStatementResponse.newBuilder()
+            var response = Statement.CreateStatementResponse.newBuilder()
                     .setStatementId(statementId)
                     .build();
 
@@ -35,20 +35,20 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
     @Override
     public void executeStatement(Statement.ExecuteStatementRequest request, StreamObserver<Statement.ExecuteStatementResponse> responseObserver) {
         try {
-            PreparedStatement statement = ObjectManager.getStatement(request.getStatementId());
+            var statement = ObjectManager.getStatement(request.getStatementId());
             statement.setFetchSize(request.getFetchSize());
 
             if (!statement.execute()) {
-                Statement.ExecuteStatementResponse.Builder responseBuilder = Statement.ExecuteStatementResponse.newBuilder()
+                var responseBuilder = Statement.ExecuteStatementResponse.newBuilder()
                         .setRecordsAffected(statement.getUpdateCount());
 
                 responseObserver.onNext(responseBuilder.build());
             } else {
-                ResultSet resultSet = statement.getResultSet();
-                ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-                String resultSetId = ObjectManager.putResultSet(resultSet);
+                var resultSet = statement.getResultSet();
+                var resultSetMetaData = resultSet.getMetaData();
+                var resultSetId = ObjectManager.putResultSet(resultSet);
 
-                Statement.ExecuteStatementResponse.Builder responseBuilder = Statement.ExecuteStatementResponse.newBuilder()
+                var responseBuilder = Statement.ExecuteStatementResponse.newBuilder()
                         .setResultSetId(resultSetId)
                         .setHasRows(resultSet.isBeforeFirst());
 
@@ -75,10 +75,10 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
     @Override
     public void cancelStatement(Statement.CancelStatementRequest request, StreamObserver<Empty> responseObserver) {
         try {
-            PreparedStatement statement = ObjectManager.getStatement(request.getStatementId());
+            var statement = ObjectManager.getStatement(request.getStatementId());
             statement.cancel();
 
-            Empty response = Empty.newBuilder()
+            var response = Empty.newBuilder()
                     .build();
 
             responseObserver.onNext(response);
@@ -93,12 +93,12 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
     @Override
     public void closeStatement(Statement.CloseStatementRequest request, StreamObserver<Empty> responseObserver) {
         try {
-            PreparedStatement statement = ObjectManager.getStatement(request.getStatementId());
+            var statement = ObjectManager.getStatement(request.getStatementId());
             statement.close();
 
             ObjectManager.removeStatement(request.getStatementId());
 
-            Empty response = Empty.newBuilder()
+            var response = Empty.newBuilder()
                     .build();
 
             responseObserver.onNext(response);
@@ -113,10 +113,10 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
     @Override
     public void setParameter(Statement.SetParameterRequest request, StreamObserver<Empty> responseObserver) {
         try {
-            PreparedStatement statement = ObjectManager.getStatement(request.getStatementId());
+            var statement = ObjectManager.getStatement(request.getStatementId());
 
-            int index = request.getIndex();
-            String value = request.getValue();
+            var index = request.getIndex();
+            var value = request.getValue();
 
             switch (request.getType()) {
                 case INT:
@@ -155,7 +155,7 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
                     break;
             }
 
-            Empty response = Empty.newBuilder()
+            var response = Empty.newBuilder()
                     .build();
 
             responseObserver.onNext(response);

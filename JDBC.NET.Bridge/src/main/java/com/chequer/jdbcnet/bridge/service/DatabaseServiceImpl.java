@@ -15,14 +15,14 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
     @Override
     public void openConnection(Database.OpenConnectionRequest request, StreamObserver<Database.OpenConnectionResponse> responseObserver) {
         try {
-            Connection connection = DriverManager.getConnection(request.getJdbcUrl());
+            var connection = DriverManager.getConnection(request.getJdbcUrl());
             connection.setAutoCommit(false);
 
-            String connectionId = ObjectManager.putConnection(connection);
+            var connectionId = ObjectManager.putConnection(connection);
 
-            DatabaseMetaData metaData = connection.getMetaData();
+            var metaData = connection.getMetaData();
 
-            Database.OpenConnectionResponse response = Database.OpenConnectionResponse.newBuilder()
+            var response = Database.OpenConnectionResponse.newBuilder()
                     .setConnectionId(connectionId)
                     .setCatalog(connection.getCatalog())
                     .setDatabaseMajorVersion(metaData.getDatabaseMajorVersion())
@@ -43,12 +43,12 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
     @Override
     public void closeConnection(Database.CloseConnectionRequest request, StreamObserver<Empty> responseObserver) {
         try {
-            Connection connection = ObjectManager.getConnection(request.getConnectionId());
+            var connection = ObjectManager.getConnection(request.getConnectionId());
             connection.close();
 
             ObjectManager.removeConnection(request.getConnectionId());
 
-            Empty response = Empty.newBuilder()
+            var response = Empty.newBuilder()
                     .build();
 
             responseObserver.onNext(response);
@@ -63,10 +63,10 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
     @Override
     public void changeCatalog(Database.ChangeCatalogRequest request, StreamObserver<Empty> responseObserver) {
         try {
-            Connection connection = ObjectManager.getConnection(request.getConnectionId());
+            var connection = ObjectManager.getConnection(request.getConnectionId());
             connection.setCatalog(request.getCatalogName());
 
-            Empty response = Empty.newBuilder()
+            var response = Empty.newBuilder()
                     .build();
 
             responseObserver.onNext(response);
@@ -81,10 +81,10 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
     @Override
     public void setAutoCommit(Database.SetAutoCommitRequest request, StreamObserver<Empty> responseObserver) {
         try {
-            Connection connection = ObjectManager.getConnection(request.getConnectionId());
+            var connection = ObjectManager.getConnection(request.getConnectionId());
             connection.setAutoCommit(request.getUseAutoCommit());
 
-            Empty response = Empty.newBuilder()
+            var response = Empty.newBuilder()
                     .build();
 
             responseObserver.onNext(response);
@@ -99,9 +99,9 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
     @Override
     public void getTransactionIsolation(Database.GetTransactionIsolationRequest request, StreamObserver<Database.GetTransactionIsolationResponse> responseObserver) {
         try {
-            Connection connection = ObjectManager.getConnection(request.getConnectionId());
+            var connection = ObjectManager.getConnection(request.getConnectionId());
 
-            Database.GetTransactionIsolationResponse response = Database.GetTransactionIsolationResponse.newBuilder()
+            var response = Database.GetTransactionIsolationResponse.newBuilder()
                     .setIsolationValue(connection.getTransactionIsolation())
                     .build();
 
@@ -118,10 +118,10 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
     @SuppressWarnings("MagicConstant")
     public void setTransactionIsolation(Database.SetTransactionIsolationRequest request, StreamObserver<Empty> responseObserver) {
         try {
-            Connection connection = ObjectManager.getConnection(request.getConnectionId());
+            var connection = ObjectManager.getConnection(request.getConnectionId());
             connection.setTransactionIsolation(request.getIsolationValue());
 
-            Empty response = Empty.newBuilder()
+            var response = Empty.newBuilder()
                     .build();
 
             responseObserver.onNext(response);
@@ -136,10 +136,10 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
     @Override
     public void rollback(Database.TransactionRequest request, StreamObserver<Empty> responseObserver) {
         try {
-            Connection connection = ObjectManager.getConnection(request.getConnectionId());
+            var connection = ObjectManager.getConnection(request.getConnectionId());
             connection.rollback();
 
-            Empty response = Empty.newBuilder()
+            var response = Empty.newBuilder()
                     .build();
 
             responseObserver.onNext(response);
@@ -154,10 +154,10 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
     @Override
     public void commit(Database.TransactionRequest request, StreamObserver<Empty> responseObserver) {
         try {
-            Connection connection = ObjectManager.getConnection(request.getConnectionId());
+            var connection = ObjectManager.getConnection(request.getConnectionId());
             connection.commit();
 
-            Empty response = Empty.newBuilder()
+            var response = Empty.newBuilder()
                     .build();
 
             responseObserver.onNext(response);

@@ -16,16 +16,16 @@ public class DriverServiceImpl extends DriverServiceGrpc.DriverServiceImplBase {
     public void loadDriver(Driver.LoadDriverRequest request, StreamObserver<Driver.LoadDriverResponse> responseObserver) {
         try {
             // Load JAR from path
-            File file = new File(request.getPath());
-            URLClassLoader classLoader = new URLClassLoader(new URL[]{file.toURI().toURL()});
+            var file = new File(request.getPath());
+            var classLoader = new URLClassLoader(new URL[]{file.toURI().toURL()});
 
             // Load Class from driver
-            Class<?> clazz = Class.forName(request.getClassName(), true, classLoader);
-            java.sql.Driver driver = (java.sql.Driver) clazz.getDeclaredConstructor().newInstance();
+            var clazz = Class.forName(request.getClassName(), true, classLoader);
+            var driver = (java.sql.Driver) clazz.getDeclaredConstructor().newInstance();
             DriverManager.registerDriver(new RuntimeDriver(driver));
 
             // Return response
-            Driver.LoadDriverResponse response = Driver.LoadDriverResponse.newBuilder()
+            var response = Driver.LoadDriverResponse.newBuilder()
                     .setMajorVersion(driver.getMajorVersion())
                     .setMinorVersion(driver.getMinorVersion())
                     .build();
