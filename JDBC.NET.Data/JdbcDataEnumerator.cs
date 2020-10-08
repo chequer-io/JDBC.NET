@@ -22,7 +22,7 @@ namespace JDBC.NET.Data
         #endregion
 
         #region Constructor
-        public JdbcDataEnumerator(JdbcConnection connection, ExecuteStatementResponse response)
+        internal JdbcDataEnumerator(JdbcConnection connection, ExecuteStatementResponse response)
         {
             Connection = connection;
             Response = response;

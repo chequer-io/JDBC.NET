@@ -36,6 +36,12 @@ namespace JDBC.NET.Data
         public override int Size { get; set; }
         #endregion
 
+        #region Constructor
+        internal JdbcParameter()
+        {
+        }
+        #endregion
+
         #region Public Methods
         public override void ResetDbType()
         {
