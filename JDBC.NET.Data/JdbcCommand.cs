@@ -240,6 +240,20 @@ namespace JDBC.NET.Data
 
         public override void Cancel()
         {
+            if (!(Connection is JdbcConnection jdbcConnection))
+                throw new InvalidOperationException();
+
+            try
+            {
+                jdbcConnection.Bridge.Statement.cancelStatement(new CancelStatementRequest
+                {
+                    StatementId = StatementId
+                });
+            }
+            catch (RpcException ex)
+            {
+                throw new JdbcException(ex);
+            }
         }
         #endregion
 

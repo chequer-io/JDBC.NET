@@ -73,6 +73,24 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
     }
 
     @Override
+    public void cancelStatement(Statement.CancelStatementRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            PreparedStatement statement = ObjectManager.getStatement(request.getStatementId());
+            statement.cancel();
+
+            Empty response = Empty.newBuilder()
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
+        }
+    }
+
+    @Override
     public void closeStatement(Statement.CloseStatementRequest request, StreamObserver<Empty> responseObserver) {
         try {
             PreparedStatement statement = ObjectManager.getStatement(request.getStatementId());
