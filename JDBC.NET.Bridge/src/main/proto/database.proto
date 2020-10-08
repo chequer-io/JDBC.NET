@@ -6,7 +6,7 @@ import "google/protobuf/empty.proto";
 
 package proto.database;
 
-enum IsolationLevel {
+enum TransactionIsolation {
   NONE = 0;
   READ_COMMITTED = 2;
   READ_UNCOMMITTED = 1;
@@ -19,7 +19,7 @@ service DatabaseService {
   rpc closeConnection (CloseConnectionRequest) returns (google.protobuf.Empty);
   rpc changeCatalog (ChangeCatalogRequest) returns (google.protobuf.Empty);
   rpc setAutoCommit (SetAutoCommitRequest) returns (google.protobuf.Empty);
-  rpc setIsolationLevel (SetIsolationLevelRequest) returns (google.protobuf.Empty);
+  rpc setTransactionIsolation (SetTransactionIsolationRequest) returns (google.protobuf.Empty);
   rpc rollback (TransactionRequest) returns (google.protobuf.Empty);
   rpc commit (TransactionRequest) returns (google.protobuf.Empty);
 }
@@ -46,9 +46,9 @@ message ChangeCatalogRequest {
   string catalogName = 2;
 }
 
-message SetIsolationLevelRequest {
+message SetTransactionIsolationRequest {
   string connectionId = 1;
-  IsolationLevel level = 2;
+  TransactionIsolation isolation = 2;
 }
 
 message SetAutoCommitRequest {

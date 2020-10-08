@@ -98,10 +98,10 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
 
     @Override
     @SuppressWarnings("MagicConstant")
-    public void setIsolationLevel(Database.SetIsolationLevelRequest request, StreamObserver<Empty> responseObserver) {
+    public void setTransactionIsolation(Database.SetTransactionIsolationRequest request, StreamObserver<Empty> responseObserver) {
         try {
             Connection connection = ObjectManager.getConnection(request.getConnectionId());
-            connection.setTransactionIsolation(request.getLevelValue());
+            connection.setTransactionIsolation(request.getIsolationValue());
 
             Empty response = Empty.newBuilder()
                     .build();

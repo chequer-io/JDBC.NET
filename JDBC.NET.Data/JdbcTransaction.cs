@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.Common;
+using JDBC.NET.Data.Converters;
 using JDBC.NET.Proto;
 
 namespace JDBC.NET.Data
@@ -56,6 +57,15 @@ namespace JDBC.NET.Data
         {
             if (IsDisposeed)
                 return;
+
+            if (IsolationLevel != IsolationLevel.Unspecified)
+            {
+                _connection.Bridge.Database.setTransactionIsolation(new SetTransactionIsolationRequest
+                {
+                    ConnectionId = _connection.ConnectionId,
+                    Isolation = TransactionIsolation.None
+                });
+            }
 
             _connection.Bridge.Database.setAutoCommit(new SetAutoCommitRequest
             {

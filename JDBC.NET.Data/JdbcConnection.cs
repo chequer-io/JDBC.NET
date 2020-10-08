@@ -3,6 +3,7 @@ using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
+using JDBC.NET.Data.Converters;
 using JDBC.NET.Data.Models;
 using JDBC.NET.Proto;
 
@@ -191,6 +192,15 @@ namespace JDBC.NET.Data
                 ConnectionId = ConnectionId,
                 UseAutoCommit = false
             });
+
+            if (isolationLevel != IsolationLevel.Unspecified)
+            {
+                Bridge.Database.setTransactionIsolation(new SetTransactionIsolationRequest
+                {
+                    ConnectionId = ConnectionId,
+                    Isolation = IsolationLevelConverter.Convert(isolationLevel)
+                });
+            }
 
             CurrentTransaction = new JdbcTransaction(this, isolationLevel);
 

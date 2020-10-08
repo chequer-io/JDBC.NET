@@ -4,7 +4,7 @@ using JDBC.NET.Data.Models;
 
 namespace JDBC.NET.Data.Converters
 {
-    public static class JdbcTypeConverter
+    internal static class JdbcTypeConverter
     {
         #region Fields
         private static readonly Dictionary<JdbcDataTypeCode, Type> _dictionary = new Dictionary<JdbcDataTypeCode, Type>
