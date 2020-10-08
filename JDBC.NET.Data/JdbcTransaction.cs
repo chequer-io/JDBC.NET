@@ -17,14 +17,17 @@ namespace JDBC.NET.Data
 
         public override IsolationLevel IsolationLevel { get; }
 
+        internal TransactionIsolation OriginalLevel { get; }
+
         public bool IsDisposeed { get; private set; }
         #endregion
 
         #region Constructor
-        internal JdbcTransaction(JdbcConnection connection, IsolationLevel IsolationLevel)
+        internal JdbcTransaction(JdbcConnection connection, IsolationLevel IsolationLevel, TransactionIsolation originalLevel)
         {
             _connection = connection;
             this.IsolationLevel = IsolationLevel;
+            OriginalLevel = originalLevel;
         }
         #endregion
 
@@ -58,12 +61,12 @@ namespace JDBC.NET.Data
             if (IsDisposeed)
                 return;
 
-            if (IsolationLevel != IsolationLevel.Unspecified)
+            if (IsolationLevelConverter.Convert(IsolationLevel) != OriginalLevel)
             {
                 _connection.Bridge.Database.setTransactionIsolation(new SetTransactionIsolationRequest
                 {
                     ConnectionId = _connection.ConnectionId,
-                    Isolation = TransactionIsolation.None
+                    Isolation = OriginalLevel
                 });
             }
 

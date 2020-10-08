@@ -22,7 +22,7 @@ namespace JDBC.NET.Data.Converters
         public static TransactionIsolation Convert(IsolationLevel level)
         {
             return !_dictionary.TryGetValue(level, out var Isolation)
-                ? throw new NotSupportedException($"{level.ToString()} Isolation Level is not supported.")
+                ? throw new NotSupportedException($"Transaction isolation level {level.ToString()} is not supported.")
                 : Isolation;
         }
         #endregion

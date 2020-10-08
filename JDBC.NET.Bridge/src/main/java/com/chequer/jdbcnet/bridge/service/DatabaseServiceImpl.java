@@ -97,6 +97,24 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
     }
 
     @Override
+    public void getTransactionIsolation(Database.GetTransactionIsolationRequest request, StreamObserver<Database.GetTransactionIsolationResponse> responseObserver) {
+        try {
+            Connection connection = ObjectManager.getConnection(request.getConnectionId());
+
+            Database.GetTransactionIsolationResponse response = Database.GetTransactionIsolationResponse.newBuilder()
+                    .setIsolationValue(connection.getTransactionIsolation())
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
+        }
+    }
+
+    @Override
     @SuppressWarnings("MagicConstant")
     public void setTransactionIsolation(Database.SetTransactionIsolationRequest request, StreamObserver<Empty> responseObserver) {
         try {

@@ -193,7 +193,24 @@ namespace JDBC.NET.Data
                 UseAutoCommit = false
             });
 
-            if (isolationLevel != IsolationLevel.Unspecified)
+            var originalLevel = Bridge.Database.getTransactionIsolation(new GetTransactionIsolationRequest
+            {
+                ConnectionId = ConnectionId
+            }).Isolation;
+
+            if (isolationLevel == IsolationLevel.Unspecified)
+            {
+                isolationLevel = originalLevel switch
+                {
+                    TransactionIsolation.None => IsolationLevel.Unspecified,
+                    TransactionIsolation.ReadCommitted => IsolationLevel.ReadCommitted,
+                    TransactionIsolation.ReadUncommitted => IsolationLevel.ReadUncommitted,
+                    TransactionIsolation.RepeatableRead => IsolationLevel.RepeatableRead,
+                    TransactionIsolation.Serializable => IsolationLevel.Serializable,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+            }
+            else if (IsolationLevelConverter.Convert(isolationLevel) != originalLevel)
             {
                 Bridge.Database.setTransactionIsolation(new SetTransactionIsolationRequest
                 {
@@ -202,7 +219,7 @@ namespace JDBC.NET.Data
                 });
             }
 
-            CurrentTransaction = new JdbcTransaction(this, isolationLevel);
+            CurrentTransaction = new JdbcTransaction(this, isolationLevel, originalLevel);
 
             return CurrentTransaction;
         }
