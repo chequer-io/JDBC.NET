@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Grpc.Core;
 using J2NET;
 using JDBC.NET.Data.Utilities;
@@ -70,7 +71,10 @@ namespace JDBC.NET.Data.Models
         private void Initialize()
         {
             var port = PortUtility.GetFreeTcpPort();
-            _process = JavaRuntime.Execute($"-XX:G1PeriodicGCInterval=5000 -jar {jarPath} -p {port}");
+
+            // TODO : Need to move Execute logic to J2NET
+            var classPaths = string.Join(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":", jarPath, DriverPath);
+            _process = JavaRuntime.Execute($"-XX:G1PeriodicGCInterval=5000 -cp \"{classPaths}\" com.chequer.jdbcnet.bridge.Main -p {port}");
             PortUtility.WaitForOpen(port);
 
             _channel = new Channel($"{host}:{port}", ChannelCredentials.Insecure);
@@ -82,7 +86,6 @@ namespace JDBC.NET.Data.Models
 
             var loadDriverResponse = Driver.loadDriver(new LoadDriverRequest
             {
-                Path = DriverPath,
                 ClassName = DriverClass
             });
 

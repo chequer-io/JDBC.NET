@@ -1,28 +1,18 @@
 package com.chequer.jdbcnet.bridge.service;
 
-import com.chequer.jdbcnet.bridge.reflection.RuntimeDriver;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import proto.driver.Driver;
 import proto.driver.DriverServiceGrpc;
 
-import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.DriverManager;
 
 public class DriverServiceImpl extends DriverServiceGrpc.DriverServiceImplBase {
     @Override
     public void loadDriver(Driver.LoadDriverRequest request, StreamObserver<Driver.LoadDriverResponse> responseObserver) {
         try {
-            // Load JAR from path
-            var file = new File(request.getPath());
-            var classLoader = new URLClassLoader(new URL[]{file.toURI().toURL()});
-
             // Load Class from driver
-            var clazz = Class.forName(request.getClassName(), true, classLoader);
-            var driver = (java.sql.Driver) clazz.getDeclaredConstructor().newInstance();
-            DriverManager.registerDriver(new RuntimeDriver(driver));
+            var driver = getDriverByClass(Class.forName(request.getClassName()));
 
             // Return response
             var response = Driver.LoadDriverResponse.newBuilder()
@@ -37,5 +27,18 @@ public class DriverServiceImpl extends DriverServiceGrpc.DriverServiceImplBase {
                     .withDescription(e.getMessage())
                     .asRuntimeException());
         }
+    }
+
+    public java.sql.Driver getDriverByClass(Class clazz) throws ClassNotFoundException {
+        var drivers = DriverManager.getDrivers();
+
+        while(drivers.hasMoreElements()) {
+            var current = drivers.nextElement();
+
+            if (current.getClass() == clazz)
+                return current;
+        }
+
+        throw new ClassNotFoundException();
     }
 }

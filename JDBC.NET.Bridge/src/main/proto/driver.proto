@@ -9,8 +9,7 @@ service DriverService {
 }
 
 message LoadDriverRequest {
-	string path = 1;
-	string className = 2;
+	string className = 1;
 }
 
 message LoadDriverResponse {
