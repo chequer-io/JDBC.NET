@@ -12,5 +12,10 @@ message JdbcDataColumn {
 }
 
 message JdbcDataRow {
-  repeated string items = 1;
+  repeated JdbcDataItem items = 1;
+}
+
+message JdbcDataItem {
+  string value = 1;
+  bool isNull = 2;
 }

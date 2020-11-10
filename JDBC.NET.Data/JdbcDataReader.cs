@@ -72,15 +72,20 @@ namespace JDBC.NET.Data
             if (_enumerator.Current == null)
                 throw new ArgumentNullException();
 
-            var value = _enumerator.Current.Items[ordinal];
+            var item = _enumerator.Current.Items[ordinal];
 
-            if (value == null)
-                return DBNull.Value;
+            if (item.IsNull)
+                return null;
+
+            var value = item.Value;
 
             try
             {
                 var fieldType = GetFieldType(ordinal);
-                return Convert.ChangeType(value, fieldType);
+
+                return fieldType != null
+                    ? Convert.ChangeType(value, fieldType)
+                    : value;
             }
             catch (InvalidCastException)
             {
