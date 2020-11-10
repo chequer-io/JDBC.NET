@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Data;
 using System.Data.Common;
@@ -77,19 +77,22 @@ namespace JDBC.NET.Data
             if (item.IsNull)
                 return null;
 
-            var value = item.Value;
+            if (item.ValueCase == JdbcDataItem.ValueOneofCase.ByteArray)
+                return item.ByteArray.ToByteArray();
+
+            var textValue = item.Text;
 
             try
             {
                 var fieldType = GetFieldType(ordinal);
 
                 return fieldType != null
-                    ? Convert.ChangeType(value, fieldType)
-                    : value;
+                    ? Convert.ChangeType(textValue, fieldType)
+                    : textValue;
             }
             catch (InvalidCastException)
             {
-                return value;
+                return textValue;
             }
         }
 

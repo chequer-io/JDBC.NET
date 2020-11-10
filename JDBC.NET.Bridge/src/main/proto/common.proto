@@ -19,6 +19,9 @@ message JdbcDataRow {
 }
 
 message JdbcDataItem {
-  string value = 1;
-  bool isNull = 2;
+  oneof value {
+    string text = 1;
+    bytes byteArray = 2;
+  }
+  bool isNull = 3;
 }

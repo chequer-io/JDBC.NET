@@ -1,6 +1,7 @@
 package com.chequer.jdbcnet.bridge.service;
 
 import com.chequer.jdbcnet.bridge.manager.ObjectManager;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -28,14 +29,17 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
 
                         for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++ ) {
                             var item = Common.JdbcDataItem.newBuilder();
-                            var value = resultSet.getString(i);
+                            var value = resultSet.getObject(i);
 
                             if (value == null) {
                                 item.setIsNull(true);
-                                value = "";
+                            } else if (value.getClass() == byte[].class) {
+                                item.setByteArray(ByteString.copyFrom((byte[])value));
+                            } else {
+                                item.setText(value.toString());
                             }
 
-                            rowBuilder.addItems(item.setValue(value).build());
+                            rowBuilder.addItems(item.build());
                         }
 
                         responseBuilder.addRows(rowBuilder.build());
