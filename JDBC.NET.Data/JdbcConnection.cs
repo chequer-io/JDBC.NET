@@ -72,6 +72,21 @@ namespace JDBC.NET.Data
         #endregion
 
         #region Public Methods
+        public override DataTable GetSchema()
+        {
+            return null;
+        }
+
+        public override DataTable GetSchema(string collectionName)
+        {
+            return null;
+        }
+
+        public override DataTable GetSchema(string collectionName, string[] restrictionValues)
+        {
+            return null;
+        }
+
         public override void Open()
         {
             try
