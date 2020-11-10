@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Data;
 using System.Data.Common;
@@ -110,8 +110,12 @@ namespace JDBC.NET.Data
                 _schemaTable = new DataTable();
                 _schemaTable.Columns.Add(SchemaTableColumn.ColumnName, typeof(string));
                 _schemaTable.Columns.Add(SchemaTableColumn.ColumnOrdinal, typeof(int));
+                _schemaTable.Columns.Add(SchemaTableColumn.BaseTableName, typeof(string));
+                _schemaTable.Columns.Add(SchemaTableColumn.BaseSchemaName, typeof(string));
                 _schemaTable.Columns.Add(SchemaTableOptionalColumn.IsReadOnly, typeof(bool));
+                _schemaTable.Columns.Add(SchemaTableOptionalColumn.IsHidden, typeof(bool));
                 _schemaTable.Columns.Add(SchemaTableColumn.DataType, typeof(Type));
+                _schemaTable.Columns.Add(SchemaTableColumn.IsKey, typeof(bool));
                 _schemaTable.Columns.Add("DataTypeName", typeof(string));
 
                 foreach (var column in Response.Columns)
@@ -119,8 +123,12 @@ namespace JDBC.NET.Data
                     _schemaTable.Rows.Add(
                         column.ColumnName,
                         column.Ordinal,
-                        true,
+                        column.TableName,
+                        column.SchemaName,
+                        column.IsReadOnly,
+                        false,
                         JdbcTypeConverter.ToType((JdbcDataTypeCode)column.DataTypeCode),
+                        false,
                         column.DataTypeName
                     );
                 }

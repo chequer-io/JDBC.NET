@@ -6,9 +6,12 @@ package proto;
 
 message JdbcDataColumn {
   int32 ordinal = 1;
-  string columnName = 2;
-  string dataTypeName = 3;
-  int32 dataTypeCode = 4;
+  string tableName = 2;
+  string schemaName = 3;
+  string columnName = 4;
+  string dataTypeName = 5;
+  int32 dataTypeCode = 6;
+  bool isReadOnly = 7;
 }
 
 message JdbcDataRow {

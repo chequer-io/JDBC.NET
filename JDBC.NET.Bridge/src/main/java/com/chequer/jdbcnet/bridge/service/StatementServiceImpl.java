@@ -55,9 +55,12 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
                 for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++ ) {
                     responseBuilder.addColumns(Common.JdbcDataColumn.newBuilder()
                             .setOrdinal(i - 1)
+                            .setTableName(resultSetMetaData.getTableName(i))
+                            .setSchemaName(resultSetMetaData.getSchemaName(i))
                             .setColumnName(resultSetMetaData.getColumnLabel(i))
                             .setDataTypeName(resultSetMetaData.getColumnTypeName(i))
                             .setDataTypeCode(resultSetMetaData.getColumnType(i))
+                            .setIsReadOnly(resultSetMetaData.isReadOnly(i))
                             .build());
                 }
 
