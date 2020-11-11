@@ -75,7 +75,7 @@ namespace JDBC.NET.Data
             var item = _enumerator.Current.Items[ordinal];
 
             if (item.IsNull)
-                return null;
+                return DBNull.Value;
 
             if (item.ValueCase == JdbcDataItem.ValueOneofCase.ByteArray)
                 return item.ByteArray.ToByteArray();
