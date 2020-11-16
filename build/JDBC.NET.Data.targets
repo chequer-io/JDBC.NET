@@ -1,6 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Bridge Include="$(MSBuildThisFileDirectory)..\bridge\JDBC.NET.Bridge-1.0-SNAPSHOT-jar-with-dependencies.jar" />
+  </ItemGroup>
+
   <Target Name="CopyBridge" BeforeTargets="PreBuildEvent">
-    <Copy SourceFiles="$(MSBuildThisFileDirectory)..\bridge\JDBC.NET.Bridge-1.0-SNAPSHOT-jar-with-dependencies.jar" DestinationFiles="$(OutputPath)\JDBC.NET.Bridge.jar" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(Bridge)" DestinationFiles="$(OutputPath)\JDBC.NET.Bridge.jar" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="PublishBridge" AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <ResolvedFileToPublish Include="@(Bridge->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>JDBC.NET.Bridge.jar</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
   </Target>
 </Project>
