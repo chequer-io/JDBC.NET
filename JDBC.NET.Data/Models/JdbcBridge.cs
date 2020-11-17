@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using Grpc.Core;
 using J2NET;
@@ -20,7 +21,7 @@ namespace JDBC.NET.Data.Models
 #if !DEBUG
         private const string jarPath = @"JDBC.NET.Bridge.jar";
 #else
-        private const string jarPath = @"..\..\..\..\JDBC.NET.Bridge\target\JDBC.NET.Bridge-1.0-SNAPSHOT-jar-with-dependencies.jar";
+        private readonly string jarPath = Path.Combine("..", "..", "..", "..", "JDBC.NET.Bridge", "target", "JDBC.NET.Bridge-1.0-SNAPSHOT-jar-with-dependencies.jar");
 #endif
         #endregion
 
