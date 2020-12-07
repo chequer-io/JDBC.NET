@@ -8,22 +8,25 @@ message JdbcDataColumn {
   int32 ordinal = 1;
   string tableName = 2;
   string schemaName = 3;
-  string columnName = 4;
-  int32 columnDisplaySize = 5;
-  int32 columnPrecision = 6;
-  int32 columnScale = 7;
-  string dataTypeName = 8;
-  string dataTypeClassName = 9;
-  int32 dataTypeCode = 10;
-  bool isAutoIncrement = 11;
-  bool isCaseSensitive = 12;
-  bool isDefinitelyWritable = 13;
-  bool isSearchable = 14;
-  int32 isNullable = 15;
-  bool isWritable = 16;
-  bool isCurrency = 17;
-  bool isReadOnly = 18;
-  bool isSigned = 19;
+  string catalogName = 4;
+  string columnName = 5;
+  string columnLabel = 6;
+  int32 columnDisplaySize = 7;
+  int32 columnPrecision = 8;
+  int32 columnScale = 9;
+  string dataTypeName = 10;
+  string dataTypeClassName = 11;
+  int32 dataTypeCode = 12;
+  bool isAutoIncrement = 13;
+  bool isCaseSensitive = 14;
+  bool isDefinitelyWritable = 15;
+  bool isSearchable = 16;
+  int32 isNullable = 17;
+  bool isAliased = 18;
+  bool isWritable = 19;
+  bool isCurrency = 20;
+  bool isReadOnly = 21;
+  bool isSigned = 22;
 }
 
 message JdbcDataRow {

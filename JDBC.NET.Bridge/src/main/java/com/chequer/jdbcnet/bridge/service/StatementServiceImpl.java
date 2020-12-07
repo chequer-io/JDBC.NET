@@ -53,11 +53,16 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
                         .setHasRows(resultSet.isBeforeFirst());
 
                 for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++ ) {
+                    var columnName = resultSetMetaData.getColumnName(i);
+                    var columnLabel = resultSetMetaData.getColumnLabel(i);
+
                     responseBuilder.addColumns(Common.JdbcDataColumn.newBuilder()
                             .setOrdinal(i - 1)
                             .setTableName(resultSetMetaData.getTableName(i))
                             .setSchemaName(resultSetMetaData.getSchemaName(i))
-                            .setColumnName(resultSetMetaData.getColumnLabel(i))
+                            .setCatalogName(resultSetMetaData.getCatalogName(i))
+                            .setColumnName(columnName)
+                            .setColumnLabel(columnLabel)
                             .setColumnDisplaySize(resultSetMetaData.getColumnDisplaySize(i))
                             .setColumnPrecision(resultSetMetaData.getPrecision(i))
                             .setColumnScale(resultSetMetaData.getScale(i))
@@ -69,6 +74,7 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
                             .setIsDefinitelyWritable(resultSetMetaData.isDefinitelyWritable(i))
                             .setIsSearchable(resultSetMetaData.isSearchable(i))
                             .setIsNullable(resultSetMetaData.isNullable(i))
+                            .setIsAliased(!columnName.equals(columnLabel))
                             .setIsWritable(resultSetMetaData.isWritable(i))
                             .setIsCurrency(resultSetMetaData.isCurrency(i))
                             .setIsReadOnly(resultSetMetaData.isReadOnly(i))

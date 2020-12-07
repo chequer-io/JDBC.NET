@@ -118,11 +118,14 @@ namespace JDBC.NET.Data
                 _schemaTable.Columns.Add(SchemaTableColumn.NumericScale, typeof(int));
                 _schemaTable.Columns.Add(SchemaTableColumn.BaseTableName, typeof(string));
                 _schemaTable.Columns.Add(SchemaTableColumn.BaseSchemaName, typeof(string));
+                _schemaTable.Columns.Add(SchemaTableColumn.BaseColumnName, typeof(string));
+                _schemaTable.Columns.Add(SchemaTableOptionalColumn.BaseCatalogName, typeof(string));
+                _schemaTable.Columns.Add(SchemaTableColumn.AllowDBNull, typeof(bool));
                 _schemaTable.Columns.Add(SchemaTableOptionalColumn.IsAutoIncrement, typeof(bool));
                 _schemaTable.Columns.Add("IsCaseSensitive", typeof(bool));
                 _schemaTable.Columns.Add("IsDefinitelyWritable", typeof(bool));
                 _schemaTable.Columns.Add("IsSearchable", typeof(bool));
-                _schemaTable.Columns.Add(SchemaTableColumn.AllowDBNull, typeof(bool));
+                _schemaTable.Columns.Add(SchemaTableColumn.IsAliased, typeof(bool));
                 _schemaTable.Columns.Add("IsWritable", typeof(bool));
                 _schemaTable.Columns.Add("IsCurrency", typeof(bool));
                 _schemaTable.Columns.Add(SchemaTableOptionalColumn.IsReadOnly, typeof(bool));
@@ -136,18 +139,21 @@ namespace JDBC.NET.Data
                 foreach (var column in Response.Columns)
                 {
                     _schemaTable.Rows.Add(
-                        column.ColumnName,
+                        column.ColumnLabel,
                         column.ColumnDisplaySize,
                         column.Ordinal,
                         column.ColumnPrecision,
                         column.ColumnScale,
                         column.TableName,
                         column.SchemaName,
+                        column.ColumnName,
+                        column.CatalogName,
+                        column.IsNullable,
                         column.IsAutoIncrement,
                         column.IsCaseSensitive,
                         column.IsDefinitelyWritable,
                         column.IsSearchable,
-                        column.IsNullable,
+                        column.IsAliased,
                         column.IsWritable,
                         column.IsCurrency,
                         column.IsReadOnly,
