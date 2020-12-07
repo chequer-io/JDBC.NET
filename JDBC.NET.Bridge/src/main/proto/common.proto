@@ -9,9 +9,21 @@ message JdbcDataColumn {
   string tableName = 2;
   string schemaName = 3;
   string columnName = 4;
-  string dataTypeName = 5;
-  int32 dataTypeCode = 6;
-  bool isReadOnly = 7;
+  int32 columnDisplaySize = 5;
+  int32 columnPrecision = 6;
+  int32 columnScale = 7;
+  string dataTypeName = 8;
+  string dataTypeClassName = 9;
+  int32 dataTypeCode = 10;
+  bool isAutoIncrement = 11;
+  bool isCaseSensitive = 12;
+  bool isDefinitelyWritable = 13;
+  bool isSearchable = 14;
+  int32 isNullable = 15;
+  bool isWritable = 16;
+  bool isCurrency = 17;
+  bool isReadOnly = 18;
+  bool isSigned = 19;
 }
 
 message JdbcDataRow {

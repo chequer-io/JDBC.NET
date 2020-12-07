@@ -58,9 +58,21 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
                             .setTableName(resultSetMetaData.getTableName(i))
                             .setSchemaName(resultSetMetaData.getSchemaName(i))
                             .setColumnName(resultSetMetaData.getColumnLabel(i))
+                            .setColumnDisplaySize(resultSetMetaData.getColumnDisplaySize(i))
+                            .setColumnPrecision(resultSetMetaData.getPrecision(i))
+                            .setColumnScale(resultSetMetaData.getScale(i))
                             .setDataTypeName(resultSetMetaData.getColumnTypeName(i))
+                            .setDataTypeClassName(resultSetMetaData.getColumnClassName(i))
                             .setDataTypeCode(resultSetMetaData.getColumnType(i))
+                            .setIsAutoIncrement(resultSetMetaData.isAutoIncrement(i))
+                            .setIsCaseSensitive(resultSetMetaData.isCaseSensitive(i))
+                            .setIsDefinitelyWritable(resultSetMetaData.isDefinitelyWritable(i))
+                            .setIsSearchable(resultSetMetaData.isSearchable(i))
+                            .setIsNullable(resultSetMetaData.isNullable(i))
+                            .setIsWritable(resultSetMetaData.isWritable(i))
+                            .setIsCurrency(resultSetMetaData.isCurrency(i))
                             .setIsReadOnly(resultSetMetaData.isReadOnly(i))
+                            .setIsSigned(resultSetMetaData.isSigned(i))
                             .build());
                 }
 

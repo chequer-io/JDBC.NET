@@ -112,27 +112,51 @@ namespace JDBC.NET.Data
             {
                 _schemaTable = new DataTable();
                 _schemaTable.Columns.Add(SchemaTableColumn.ColumnName, typeof(string));
+                _schemaTable.Columns.Add(SchemaTableColumn.ColumnSize, typeof(int));
                 _schemaTable.Columns.Add(SchemaTableColumn.ColumnOrdinal, typeof(int));
+                _schemaTable.Columns.Add(SchemaTableColumn.NumericPrecision, typeof(int));
+                _schemaTable.Columns.Add(SchemaTableColumn.NumericScale, typeof(int));
                 _schemaTable.Columns.Add(SchemaTableColumn.BaseTableName, typeof(string));
                 _schemaTable.Columns.Add(SchemaTableColumn.BaseSchemaName, typeof(string));
+                _schemaTable.Columns.Add(SchemaTableOptionalColumn.IsAutoIncrement, typeof(bool));
+                _schemaTable.Columns.Add("IsCaseSensitive", typeof(bool));
+                _schemaTable.Columns.Add("IsDefinitelyWritable", typeof(bool));
+                _schemaTable.Columns.Add("IsSearchable", typeof(bool));
+                _schemaTable.Columns.Add(SchemaTableColumn.AllowDBNull, typeof(bool));
+                _schemaTable.Columns.Add("IsWritable", typeof(bool));
+                _schemaTable.Columns.Add("IsCurrency", typeof(bool));
                 _schemaTable.Columns.Add(SchemaTableOptionalColumn.IsReadOnly, typeof(bool));
                 _schemaTable.Columns.Add(SchemaTableOptionalColumn.IsHidden, typeof(bool));
+                _schemaTable.Columns.Add("IsSigned", typeof(bool));
                 _schemaTable.Columns.Add(SchemaTableColumn.DataType, typeof(Type));
-                _schemaTable.Columns.Add(SchemaTableColumn.IsKey, typeof(bool));
+                _schemaTable.Columns.Add("DataTypeClassName", typeof(string));
                 _schemaTable.Columns.Add("DataTypeName", typeof(string));
+                _schemaTable.Columns.Add(SchemaTableColumn.IsKey, typeof(bool));
 
                 foreach (var column in Response.Columns)
                 {
                     _schemaTable.Rows.Add(
                         column.ColumnName,
+                        column.ColumnDisplaySize,
                         column.Ordinal,
+                        column.ColumnPrecision,
+                        column.ColumnScale,
                         column.TableName,
                         column.SchemaName,
+                        column.IsAutoIncrement,
+                        column.IsCaseSensitive,
+                        column.IsDefinitelyWritable,
+                        column.IsSearchable,
+                        column.IsNullable,
+                        column.IsWritable,
+                        column.IsCurrency,
                         column.IsReadOnly,
                         false,
+                        column.IsSigned,
                         JdbcTypeConverter.ToType((JdbcDataTypeCode)column.DataTypeCode),
-                        false,
-                        column.DataTypeName
+                        column.DataTypeClassName,
+                        column.DataTypeName,
+                        false
                     );
                 }
             }
