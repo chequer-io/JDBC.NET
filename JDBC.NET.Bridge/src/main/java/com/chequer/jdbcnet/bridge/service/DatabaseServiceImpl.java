@@ -7,15 +7,17 @@ import io.grpc.stub.StreamObserver;
 import proto.database.Database;
 import proto.database.DatabaseServiceGrpc;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.util.Properties;
 
 public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImplBase {
     @Override
     public void openConnection(Database.OpenConnectionRequest request, StreamObserver<Database.OpenConnectionResponse> responseObserver) {
         try {
-            var connection = DriverManager.getConnection(request.getJdbcUrl());
+            var properties = new Properties();
+            properties.putAll(request.getPropertiesMap());
+
+            var connection = DriverManager.getConnection(request.getJdbcUrl(), properties);
             connection.setAutoCommit(true);
 
             var connectionId = ObjectManager.putConnection(connection);

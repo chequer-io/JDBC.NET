@@ -27,6 +27,7 @@ service DatabaseService {
 
 message OpenConnectionRequest {
   string jdbcUrl = 1;
+  map<string, string> properties = 2;
 }
 
 message OpenConnectionResponse {

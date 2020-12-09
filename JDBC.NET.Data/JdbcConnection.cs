@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
@@ -45,6 +46,8 @@ namespace JDBC.NET.Data
             set => ConnectionStringBuilder = new JdbcConnectionStringBuilder(value);
         }
 
+        public JdbcConnectionProperties ConnectionProperties { get; set; } = new JdbcConnectionProperties();
+
         internal JdbcConnectionStringBuilder ConnectionStringBuilder { get; set; } = new JdbcConnectionStringBuilder();
 
         public override ConnectionState State => _state;
@@ -61,13 +64,14 @@ namespace JDBC.NET.Data
         {
         }
 
-        public JdbcConnection(string connectionString) : this(new JdbcConnectionStringBuilder(connectionString))
+        public JdbcConnection(string connectionString, IEnumerable<KeyValuePair<string, string>> connectionProperties = null) : this(new JdbcConnectionStringBuilder(connectionString), connectionProperties)
         {
         }
 
-        public JdbcConnection(JdbcConnectionStringBuilder connectionStringBuilder) : this()
+        public JdbcConnection(JdbcConnectionStringBuilder connectionStringBuilder, IEnumerable<KeyValuePair<string, string>> connectionProperties = null) : this()
         {
             ConnectionStringBuilder = connectionStringBuilder;
+            ConnectionProperties = new JdbcConnectionProperties(connectionProperties);
         }
         #endregion
 
@@ -116,7 +120,11 @@ namespace JDBC.NET.Data
 
                     var response = Bridge.Database.openConnection(new OpenConnectionRequest
                     {
-                        JdbcUrl = ConnectionStringBuilder.JdbcUrl
+                        JdbcUrl = ConnectionStringBuilder.JdbcUrl,
+                        Properties =
+                        {
+                            ConnectionProperties
+                        }
                     });
 
                     ConnectionId = response.ConnectionId;
@@ -288,7 +296,7 @@ namespace JDBC.NET.Data
         public object Clone()
         {
             CheckDispose();
-            return new JdbcConnection(ConnectionStringBuilder);
+            return new JdbcConnection(ConnectionStringBuilder, ConnectionProperties);
         }
         #endregion
     }
