@@ -34,7 +34,7 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             responseObserver.onError(Status.INTERNAL
                     .withDescription(e.getMessage())
                     .asRuntimeException());
@@ -54,7 +54,7 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             responseObserver.onError(Status.INTERNAL
                     .withDescription(e.getMessage())
                     .asRuntimeException());
@@ -72,7 +72,7 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             responseObserver.onError(Status.INTERNAL
                     .withDescription(e.getMessage())
                     .asRuntimeException());
@@ -90,7 +90,7 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             responseObserver.onError(Status.INTERNAL
                     .withDescription(e.getMessage())
                     .asRuntimeException());
@@ -108,7 +108,7 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             responseObserver.onError(Status.INTERNAL
                     .withDescription(e.getMessage())
                     .asRuntimeException());
@@ -127,7 +127,7 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             responseObserver.onError(Status.INTERNAL
                     .withDescription(e.getMessage())
                     .asRuntimeException());
@@ -145,7 +145,7 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             responseObserver.onError(Status.INTERNAL
                     .withDescription(e.getMessage())
                     .asRuntimeException());
@@ -163,7 +163,7 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             responseObserver.onError(Status.INTERNAL
                     .withDescription(e.getMessage())
                     .asRuntimeException());

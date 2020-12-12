@@ -56,7 +56,7 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
                     }
 
                     onCompleted();
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     onError(e);
                 }
             }
@@ -86,7 +86,7 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             responseObserver.onError(Status.INTERNAL
                     .withDescription(e.getMessage())
                     .asRuntimeException());

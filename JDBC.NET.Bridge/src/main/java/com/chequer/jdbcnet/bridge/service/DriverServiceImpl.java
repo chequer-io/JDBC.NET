@@ -22,7 +22,7 @@ public class DriverServiceImpl extends DriverServiceGrpc.DriverServiceImplBase {
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             responseObserver.onError(Status.INTERNAL
                     .withDescription(e.getMessage())
                     .asRuntimeException());
