@@ -71,7 +71,7 @@ namespace JDBC.NET.Data
         public JdbcConnection(JdbcConnectionStringBuilder connectionStringBuilder, IEnumerable<KeyValuePair<string, string>> connectionProperties = null) : this()
         {
             ConnectionStringBuilder = connectionStringBuilder;
-            ConnectionProperties = new JdbcConnectionProperties(connectionProperties);
+            ConnectionProperties = connectionProperties == null ? new JdbcConnectionProperties() : new JdbcConnectionProperties(connectionProperties);
         }
         #endregion
 
