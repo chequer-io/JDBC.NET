@@ -8,7 +8,7 @@ namespace JDBC.NET.Data.Converters
     internal static class IsolationLevelConverter
     {
         #region Fields
-        private static readonly Dictionary<IsolationLevel, TransactionIsolation> _dictionary = new Dictionary<IsolationLevel, TransactionIsolation>
+        private static readonly Dictionary<IsolationLevel, TransactionIsolation> _dictionary = new()
         {
             { IsolationLevel.Unspecified, TransactionIsolation.None },
             { IsolationLevel.ReadCommitted, TransactionIsolation.ReadCommitted },

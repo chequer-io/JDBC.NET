@@ -7,7 +7,7 @@ namespace JDBC.NET.Data.Converters
     internal static class JdbcTypeConverter
     {
         #region Fields
-        private static readonly Dictionary<JdbcDataTypeCode, Type> _dictionary = new Dictionary<JdbcDataTypeCode, Type>
+        private static readonly Dictionary<JdbcDataTypeCode, Type> _dictionary = new()
         {
             { JdbcDataTypeCode.ARRAY, typeof(Array) },
             { JdbcDataTypeCode.BIGINT, typeof(long) },
@@ -47,7 +47,7 @@ namespace JDBC.NET.Data.Converters
             { JdbcDataTypeCode.TIMESTAMP_WITH_TIMEZONE, typeof(DateTimeOffset) },
             { JdbcDataTypeCode.TINYINT, typeof(short) },
             { JdbcDataTypeCode.VARBINARY, typeof(byte[]) },
-            { JdbcDataTypeCode.VARCHAR, typeof(string) },
+            { JdbcDataTypeCode.VARCHAR, typeof(string) }
         };
         #endregion
 
@@ -55,7 +55,7 @@ namespace JDBC.NET.Data.Converters
         public static Type ToType(JdbcDataTypeCode typeCode)
         {
             return !_dictionary.TryGetValue(typeCode, out var type)
-                ? typeof(object) 
+                ? typeof(object)
                 : type;
         }
         #endregion

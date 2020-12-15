@@ -40,7 +40,7 @@ namespace JDBC.NET.Data
 
         protected override DbParameterCollection DbParameterCollection => Parameters;
 
-        public new JdbcParameterCollection Parameters { get; } = new JdbcParameterCollection();
+        public new JdbcParameterCollection Parameters { get; } = new();
 
         protected override DbTransaction DbTransaction
         {

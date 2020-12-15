@@ -10,7 +10,7 @@ namespace JDBC.NET.Data
     public class JdbcParameterCollection : DbParameterCollection
     {
         #region Fields
-        private readonly List<JdbcParameter> _internalList = new List<JdbcParameter>();
+        private readonly List<JdbcParameter> _internalList = new();
         #endregion
 
         #region Properties

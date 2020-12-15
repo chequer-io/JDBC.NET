@@ -7,7 +7,7 @@ namespace JDBC.NET.Data
     internal static class JdbcBridgePool
     {
         #region Fields
-        private static readonly Dictionary<string, JdbcBridgeReference> _bridges = new Dictionary<string, JdbcBridgeReference>();
+        private static readonly Dictionary<string, JdbcBridgeReference> _bridges = new();
         #endregion
 
         #region Public Methods

@@ -46,9 +46,9 @@ namespace JDBC.NET.Data
             set => ConnectionStringBuilder = new JdbcConnectionStringBuilder(value);
         }
 
-        public JdbcConnectionProperties ConnectionProperties { get; set; } = new JdbcConnectionProperties();
+        public JdbcConnectionProperties ConnectionProperties { get; set; } = new();
 
-        internal JdbcConnectionStringBuilder ConnectionStringBuilder { get; set; } = new JdbcConnectionStringBuilder();
+        internal JdbcConnectionStringBuilder ConnectionStringBuilder { get; set; } = new();
 
         public override ConnectionState State => _state;
 
@@ -233,7 +233,7 @@ namespace JDBC.NET.Data
                     TransactionIsolation.ReadUncommitted => IsolationLevel.ReadUncommitted,
                     TransactionIsolation.RepeatableRead => IsolationLevel.RepeatableRead,
                     TransactionIsolation.Serializable => IsolationLevel.Serializable,
-                    _ => throw new ArgumentOutOfRangeException()
+                    _ => throw new ArgumentOutOfRangeException(nameof(isolationLevel))
                 };
             }
             else if (IsolationLevelConverter.Convert(isolationLevel) != originalLevel)
