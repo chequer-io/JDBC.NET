@@ -54,7 +54,7 @@ namespace JDBC.NET.Sample
 
             var builder = new JdbcConnectionStringBuilder
             {
-                ChunkSize = 500,
+                FetchSize = -1,
                 DriverPath = driverPath,
                 DriverClass = driverClass,
                 JdbcUrl = jdbcUrl
