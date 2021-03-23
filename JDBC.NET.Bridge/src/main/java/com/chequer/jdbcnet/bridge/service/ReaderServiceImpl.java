@@ -9,6 +9,7 @@ import proto.Common;
 import proto.reader.Reader;
 import proto.reader.ReaderServiceGrpc;
 
+import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 
@@ -27,14 +28,26 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
                         readCount++;
                         var rowBuilder = Common.JdbcDataRow.newBuilder();
 
-                        for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++ ) {
+                        for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
                             var item = Common.JdbcDataItem.newBuilder();
                             var value = resultSet.getObject(i);
 
                             if (value == null) {
                                 item.setIsNull(true);
                             } else if (value.getClass() == byte[].class) {
-                                item.setByteArray(ByteString.copyFrom((byte[])value));
+                                item.setByteArray(ByteString.copyFrom((byte[]) value));
+                            } else if (value instanceof Clob) {
+                                var reader = ((Clob) value).getCharacterStream();
+
+                                var builder = new StringBuilder();
+
+                                while (true) {
+                                    var data = reader.read();
+                                    if (data == -1) break;
+                                    builder.append((char) data);
+                                }
+
+                                item.setText(builder.toString());
                             } else {
                                 item.setText(value.toString());
                             }
@@ -44,7 +57,7 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
 
                         responseBuilder.addRows(rowBuilder.build());
 
-                        if (readCount >= readResultSetRequest.getChunkSize()){
+                        if (readCount >= readResultSetRequest.getChunkSize()) {
                             responseObserver.onNext(responseBuilder.build());
                             return;
                         }
