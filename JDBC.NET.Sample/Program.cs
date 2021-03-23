@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using JDBC.NET.Data;
@@ -54,7 +54,7 @@ namespace JDBC.NET.Sample
 
             var builder = new JdbcConnectionStringBuilder
             {
-                FetchSize = int.MinValue,
+                ChunkSize = 500,
                 DriverPath = driverPath,
                 DriverClass = driverClass,
                 JdbcUrl = jdbcUrl
