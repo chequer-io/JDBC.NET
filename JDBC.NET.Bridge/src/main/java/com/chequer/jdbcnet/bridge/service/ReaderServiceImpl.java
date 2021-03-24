@@ -1,6 +1,7 @@
 package com.chequer.jdbcnet.bridge.service;
 
 import com.chequer.jdbcnet.bridge.manager.ObjectManager;
+import com.chequer.jdbcnet.bridge.utils.Utils;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import io.grpc.Status;
@@ -9,9 +10,7 @@ import proto.Common;
 import proto.reader.Reader;
 import proto.reader.ReaderServiceGrpc;
 
-import java.sql.Clob;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
+import java.sql.*;
 
 public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
     @Override
@@ -48,6 +47,25 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
                                 }
 
                                 item.setText(builder.toString());
+                            } else if (value instanceof Array) {
+                                var byteString = ByteString.copyFromUtf8("{");
+
+                                var arr = ((Object[]) ((Array) value).getArray());
+                                for (Object v : arr) {
+                                    if (byteString.size() > 1) {
+                                        byteString = byteString.concat(ByteString.copyFromUtf8(", "));
+                                    }
+
+                                    if (v.getClass() == byte[].class) {
+                                        byteString = byteString.concat(ByteString.copyFromUtf8(Utils.bytesToHex((byte[]) v)));
+                                    } else {
+                                        byteString = byteString.concat(ByteString.copyFromUtf8(v.toString()));
+                                    }
+                                }
+
+                                byteString = byteString.concat(ByteString.copyFromUtf8("}"));
+
+                                item.setTextBytes(byteString);
                             } else {
                                 item.setText(value.toString());
                             }
