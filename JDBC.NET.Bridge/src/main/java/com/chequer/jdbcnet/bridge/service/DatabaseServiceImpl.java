@@ -25,7 +25,8 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
 
             var response = Database.OpenConnectionResponse.newBuilder()
                     .setConnectionId(connectionId)
-                    .setCatalog(connection.getCatalog())
+                    // TODO: 빈 Catalog에 대한 처리 필요함
+                    .setCatalog(connection.getCatalog() == null ? "" : connection.getCatalog())
                     .setDatabaseMajorVersion(metaData.getDatabaseMajorVersion())
                     .setDatabaseMinorVersion(metaData.getDatabaseMinorVersion())
                     .setDatabaseProductVersion(metaData.getDatabaseProductVersion())

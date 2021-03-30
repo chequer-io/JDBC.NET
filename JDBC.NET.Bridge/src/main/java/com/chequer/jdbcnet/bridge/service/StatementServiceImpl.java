@@ -36,7 +36,7 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
     public void executeStatement(Statement.ExecuteStatementRequest request, StreamObserver<Statement.ExecuteStatementResponse> responseObserver) {
         try {
             var statement = ObjectManager.getStatement(request.getStatementId());
-            statement.setFetchSize(request.getFetchSize());
+            statement.setFetchSize(request.getFetchSize() == -1 ? statement.getMaxRows() : request.getFetchSize());
 
             if (!statement.execute()) {
                 var responseBuilder = Statement.ExecuteStatementResponse.newBuilder()
@@ -52,7 +52,7 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
                         .setResultSetId(resultSetId)
                         .setHasRows(resultSet.isBeforeFirst());
 
-                for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++ ) {
+                for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
                     var columnName = resultSetMetaData.getColumnName(i);
                     var columnLabel = resultSetMetaData.getColumnLabel(i);
 

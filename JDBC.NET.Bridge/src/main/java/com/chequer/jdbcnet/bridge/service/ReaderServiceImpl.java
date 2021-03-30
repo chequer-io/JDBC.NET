@@ -1,6 +1,7 @@
 package com.chequer.jdbcnet.bridge.service;
 
 import com.chequer.jdbcnet.bridge.manager.ObjectManager;
+import com.chequer.jdbcnet.bridge.utils.Utils;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import io.grpc.Status;
@@ -9,8 +10,7 @@ import proto.Common;
 import proto.reader.Reader;
 import proto.reader.ReaderServiceGrpc;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
+import java.sql.*;
 
 public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
     @Override
@@ -27,14 +27,45 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
                         readCount++;
                         var rowBuilder = Common.JdbcDataRow.newBuilder();
 
-                        for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++ ) {
+                        for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
                             var item = Common.JdbcDataItem.newBuilder();
                             var value = resultSet.getObject(i);
 
                             if (value == null) {
                                 item.setIsNull(true);
                             } else if (value.getClass() == byte[].class) {
-                                item.setByteArray(ByteString.copyFrom((byte[])value));
+                                item.setByteArray(ByteString.copyFrom((byte[]) value));
+                            } else if (value instanceof Clob) {
+                                var reader = ((Clob) value).getCharacterStream();
+
+                                var builder = new StringBuilder();
+
+                                while (true) {
+                                    var data = reader.read();
+                                    if (data == -1) break;
+                                    builder.append((char) data);
+                                }
+
+                                item.setText(builder.toString());
+                            } else if (value instanceof Array) {
+                                var byteString = ByteString.copyFromUtf8("{");
+
+                                var arr = ((Object[]) ((Array) value).getArray());
+                                for (Object v : arr) {
+                                    if (byteString.size() > 1) {
+                                        byteString = byteString.concat(ByteString.copyFromUtf8(", "));
+                                    }
+
+                                    if (v.getClass() == byte[].class) {
+                                        byteString = byteString.concat(ByteString.copyFromUtf8(Utils.bytesToHex((byte[]) v)));
+                                    } else {
+                                        byteString = byteString.concat(ByteString.copyFromUtf8(v.toString()));
+                                    }
+                                }
+
+                                byteString = byteString.concat(ByteString.copyFromUtf8("}"));
+
+                                item.setTextBytes(byteString);
                             } else {
                                 item.setText(value.toString());
                             }
@@ -44,7 +75,7 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
 
                         responseBuilder.addRows(rowBuilder.build());
 
-                        if (readCount >= readResultSetRequest.getChunkSize()){
+                        if (readCount >= readResultSetRequest.getChunkSize()) {
                             responseObserver.onNext(responseBuilder.build());
                             return;
                         }
