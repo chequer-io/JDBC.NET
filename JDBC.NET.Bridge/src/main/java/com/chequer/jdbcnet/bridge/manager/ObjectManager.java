@@ -1,5 +1,7 @@
 package com.chequer.jdbcnet.bridge.manager;
 
+import com.chequer.jdbcnet.bridge.models.ResultSetEx;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,9 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ObjectManager {
     //region Fields
-    private static final ConcurrentHashMap<String, PreparedStatement> _statements = new ConcurrentHashMap<String, PreparedStatement>();
-    private static final ConcurrentHashMap<String, Connection> _connections = new ConcurrentHashMap<String, Connection>();
-    private static final ConcurrentHashMap<String, ResultSet> _resultSets = new ConcurrentHashMap<String, ResultSet>();
+    private static final ConcurrentHashMap<String, PreparedStatement> _statements = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Connection> _connections = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, ResultSetEx> _resultSets = new ConcurrentHashMap<>();
     //endregion
 
     //region Statement Method
@@ -49,19 +51,19 @@ public class ObjectManager {
     //endregion
 
     //region ResultSet Method
-    public static String putResultSet(ResultSet resultSet) {
+    public static String putResultSet(ResultSetEx resultSetEx) {
         var id = UUID.randomUUID().toString();
-        _resultSets.put(id, resultSet);
+        _resultSets.put(id, resultSetEx);
 
         return id;
     }
 
-    public static ResultSet getResultSet(String resultSetId) {
-        return _resultSets.get(resultSetId);
+    public static ResultSetEx getResultSet(String resultSetExId) {
+        return _resultSets.get(resultSetExId);
     }
 
-    public static void removeResultSet(String resultSetId) {
-        _resultSets.remove(resultSetId);
+    public static void removeResultSet(String resultSetExId) {
+        _resultSets.remove(resultSetExId);
     }
     //endregion
 }

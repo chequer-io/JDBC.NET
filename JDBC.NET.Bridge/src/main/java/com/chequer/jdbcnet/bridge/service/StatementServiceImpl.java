@@ -1,6 +1,7 @@
 package com.chequer.jdbcnet.bridge.service;
 
 import com.chequer.jdbcnet.bridge.manager.ObjectManager;
+import com.chequer.jdbcnet.bridge.models.ResultSetEx;
 import com.google.protobuf.Empty;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -44,13 +45,13 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
 
                 responseObserver.onNext(responseBuilder.build());
             } else {
-                var resultSet = statement.getResultSet();
+                var resultSet = new ResultSetEx(statement.getResultSet());
                 var resultSetMetaData = resultSet.getMetaData();
                 var resultSetId = ObjectManager.putResultSet(resultSet);
 
                 var responseBuilder = Statement.ExecuteStatementResponse.newBuilder()
                         .setResultSetId(resultSetId)
-                        .setHasRows(resultSet.next());
+                        .setHasRows(resultSet.getHasRows());
 
                 for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
                     var columnName = resultSetMetaData.getColumnName(i);

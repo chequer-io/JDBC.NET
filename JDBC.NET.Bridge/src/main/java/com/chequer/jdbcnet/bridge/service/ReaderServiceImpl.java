@@ -24,6 +24,9 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
 
                     int readCount = 0;
                     do {
+                        if (!resultSet.getHasRows())
+                            break;
+
                         readCount++;
                         var rowBuilder = Common.JdbcDataRow.newBuilder();
 
