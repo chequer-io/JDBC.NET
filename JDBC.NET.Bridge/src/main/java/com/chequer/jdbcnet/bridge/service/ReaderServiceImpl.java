@@ -23,7 +23,7 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
                     var responseBuilder = Reader.ReadResultSetResponse.newBuilder();
 
                     int readCount = 0;
-                    while (resultSet.next()) {
+                    do {
                         readCount++;
                         var rowBuilder = Common.JdbcDataRow.newBuilder();
 
@@ -79,7 +79,7 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
                             responseObserver.onNext(responseBuilder.build());
                             return;
                         }
-                    }
+                    } while (resultSet.next());
 
                     if (readCount > 0) {
                         responseBuilder.setIsCompleted(true);

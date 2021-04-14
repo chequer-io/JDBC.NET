@@ -50,7 +50,7 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
 
                 var responseBuilder = Statement.ExecuteStatementResponse.newBuilder()
                         .setResultSetId(resultSetId)
-                        .setHasRows(resultSet.isBeforeFirst());
+                        .setHasRows(resultSet.next());
 
                 for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
                     var columnName = resultSetMetaData.getColumnName(i);
