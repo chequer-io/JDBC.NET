@@ -50,6 +50,8 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
                                 }
 
                                 item.setText(builder.toString());
+                            } else if (value instanceof Blob) {
+                                item.setByteArray(ByteString.copyFrom(((Blob) value).getBinaryStream().readAllBytes()));
                             } else if (value instanceof Array) {
                                 var byteString = ByteString.copyFromUtf8("{");
 
