@@ -4,6 +4,13 @@ option csharp_namespace = "JDBC.NET.Proto";
 
 package proto;
 
+message JdbcResultSetResponse {
+  string resultSetId = 1;
+  int32 recordsAffected = 2;
+  bool hasRows = 4;
+  repeated JdbcDataColumn columns = 5;
+}
+
 message JdbcDataColumn {
   int32 ordinal = 1;
   string tableName = 2;

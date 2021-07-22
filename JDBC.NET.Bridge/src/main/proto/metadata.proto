@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+option csharp_namespace = "JDBC.NET.Proto";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+import "common.proto";
+
+package proto.metadata;
+
+service MetaDataService {
+  // ResultSet
+  rpc getTables (GetTablesRequest) returns (JdbcResultSetResponse);
+  rpc getCatalogs (GetMetaDataRequest) returns (JdbcResultSetResponse);
+  rpc getProcedures (GetProceduresRequest) returns (JdbcResultSetResponse);
+
+  // Boolean
+  rpc isReadOnly (GetMetaDataRequest) returns (google.protobuf.BoolValue);
+  rpc supportsGroupBy (GetMetaDataRequest) returns (google.protobuf.BoolValue);
+}
+
+message GetTablesRequest {
+  string connectionId = 1;
+  string catalog = 2;
+  string schemaPattern = 3;
+  string tableNamePattern = 4;
+  repeated string types = 5;
+}
+
+message GetProceduresRequest {
+  string connectionId = 1;
+  string catalog = 2;
+  string schemaPattern = 3;
+  string procedureNamePattern = 4;
+}
+
+message GetMetaDataRequest {
+  string connectionId = 1;
+}

@@ -2,6 +2,7 @@ package com.chequer.jdbcnet.bridge.service;
 
 import com.chequer.jdbcnet.bridge.manager.ObjectManager;
 import com.chequer.jdbcnet.bridge.models.ResultSetEx;
+import com.chequer.jdbcnet.bridge.utils.Utils;
 import com.google.protobuf.Empty;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -9,9 +10,9 @@ import proto.Common;
 import proto.statement.Statement;
 import proto.statement.StatementServiceGrpc;
 
-import java.math.BigDecimal;
-import java.sql.*;
-import java.util.Optional;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.Time;
 
 public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceImplBase {
     @Override
@@ -35,13 +36,13 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
     }
 
     @Override
-    public void executeStatement(Statement.ExecuteStatementRequest request, StreamObserver<Statement.ExecuteStatementResponse> responseObserver) {
+    public void executeStatement(Statement.ExecuteStatementRequest request, StreamObserver<Common.JdbcResultSetResponse> responseObserver) {
         try {
             var statement = ObjectManager.getStatement(request.getStatementId());
             statement.setFetchSize(request.getFetchSize() == -1 ? statement.getMaxRows() : request.getFetchSize());
 
             if (!statement.execute()) {
-                var responseBuilder = Statement.ExecuteStatementResponse.newBuilder()
+                var responseBuilder = Common.JdbcResultSetResponse.newBuilder()
                         .setRecordsAffected(statement.getUpdateCount());
 
                 responseObserver.onNext(responseBuilder.build());
@@ -50,40 +51,11 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
                 var resultSetMetaData = resultSet.getMetaData();
                 var resultSetId = ObjectManager.putResultSet(resultSet);
 
-                var responseBuilder = Statement.ExecuteStatementResponse.newBuilder()
+                var responseBuilder = Common.JdbcResultSetResponse.newBuilder()
                         .setResultSetId(resultSetId)
                         .setHasRows(resultSet.getHasRows());
 
-                for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
-                    var columnName = resultSetMetaData.getColumnName(i);
-                    var columnLabel = resultSetMetaData.getColumnLabel(i);
-
-                    responseBuilder.addColumns(Common.JdbcDataColumn.newBuilder()
-                            .setOrdinal(i - 1)
-                            .setTableName(Optional.ofNullable(resultSetMetaData.getTableName(i)).orElse(""))
-                            .setSchemaName(Optional.ofNullable(resultSetMetaData.getSchemaName(i)).orElse(""))
-                            .setCatalogName(Optional.ofNullable(resultSetMetaData.getCatalogName(i)).orElse(""))
-                            .setColumnName(Optional.ofNullable(columnName).orElse(""))
-                            .setColumnLabel(Optional.ofNullable(columnLabel).orElse(""))
-                            .setColumnDisplaySize(resultSetMetaData.getColumnDisplaySize(i))
-                            .setColumnPrecision(resultSetMetaData.getPrecision(i))
-                            .setColumnScale(resultSetMetaData.getScale(i))
-                            .setDataTypeName(Optional.ofNullable(resultSetMetaData.getColumnTypeName(i)).orElse(""))
-                            .setDataTypeClassName(Optional.ofNullable(resultSetMetaData.getColumnClassName(i)).orElse(""))
-                            .setDataTypeCode(resultSetMetaData.getColumnType(i))
-                            .setIsAutoIncrement(resultSetMetaData.isAutoIncrement(i))
-                            .setIsCaseSensitive(resultSetMetaData.isCaseSensitive(i))
-                            .setIsDefinitelyWritable(resultSetMetaData.isDefinitelyWritable(i))
-                            .setIsSearchable(resultSetMetaData.isSearchable(i))
-                            .setIsNullable(resultSetMetaData.isNullable(i))
-                            .setIsAliased(!columnName.equals(columnLabel))
-                            .setIsWritable(resultSetMetaData.isWritable(i))
-                            .setIsCurrency(resultSetMetaData.isCurrency(i))
-                            .setIsReadOnly(resultSetMetaData.isReadOnly(i))
-                            .setIsSigned(resultSetMetaData.isSigned(i))
-                            .build());
-                }
-
+                Utils.addColumns(responseBuilder, resultSetMetaData);
                 responseObserver.onNext(responseBuilder.build());
             }
 

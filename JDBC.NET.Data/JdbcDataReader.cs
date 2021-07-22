@@ -20,7 +20,7 @@ namespace JDBC.NET.Data
         #region Properties
         private JdbcCommand Command { get; }
 
-        private ExecuteStatementResponse Response { get; }
+        private JdbcResultSetResponse Response { get; }
 
         public override int FieldCount => Response.Columns.Count;
 
@@ -52,12 +52,12 @@ namespace JDBC.NET.Data
         #endregion
 
         #region Constructor
-        internal JdbcDataReader(JdbcCommand command, ExecuteStatementResponse response)
+        internal JdbcDataReader(JdbcCommand command, JdbcResultSetResponse response)
         {
             Command = command;
             Response = response;
 
-            if (!(Command.Connection is JdbcConnection jdbcConnection))
+            if (Command.Connection is not JdbcConnection jdbcConnection)
                 throw new InvalidOperationException();
 
             _enumerator = new JdbcDataEnumerator(jdbcConnection, response);
@@ -305,7 +305,7 @@ namespace JDBC.NET.Data
         {
             _enumerator?.Dispose();
 
-            if (!(Command.Connection is JdbcConnection jdbcConnection))
+            if (Command.Connection is not JdbcConnection jdbcConnection)
                 throw new InvalidOperationException();
 
             if (!string.IsNullOrEmpty(Response.ResultSetId))

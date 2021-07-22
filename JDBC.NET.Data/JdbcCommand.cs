@@ -47,10 +47,10 @@ namespace JDBC.NET.Data
             get => _dbTransaction;
             set
             {
-                if (!(value is JdbcTransaction jdbcTransaction))
+                if (value is not JdbcTransaction jdbcTransaction)
                     throw new InvalidOperationException();
 
-                if (!(Connection is JdbcConnection jdbcConnection))
+                if (Connection is not JdbcConnection jdbcConnection)
                     throw new InvalidOperationException();
 
                 if (jdbcConnection.CurrentTransaction != jdbcTransaction)
@@ -85,7 +85,7 @@ namespace JDBC.NET.Data
             if (IsPrepared)
                 return;
 
-            if (!(Connection is JdbcConnection jdbcConnection))
+            if (Connection is not JdbcConnection jdbcConnection)
                 throw new InvalidOperationException();
 
             if (Parameters.Count <= 0)
@@ -210,7 +210,7 @@ namespace JDBC.NET.Data
 
         protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
         {
-            if (!(Connection is JdbcConnection jdbcConnection))
+            if (Connection is not JdbcConnection jdbcConnection)
                 throw new InvalidOperationException();
 
             if (_dataReader?.IsClosed == false)
@@ -240,7 +240,7 @@ namespace JDBC.NET.Data
 
         public override void Cancel()
         {
-            if (!(Connection is JdbcConnection jdbcConnection))
+            if (Connection is not JdbcConnection jdbcConnection)
                 throw new InvalidOperationException();
 
             try
@@ -260,7 +260,7 @@ namespace JDBC.NET.Data
         #region Private Methods
         private void CreateStatement(string sql)
         {
-            if (!(Connection is JdbcConnection jdbcConnection))
+            if (Connection is not JdbcConnection jdbcConnection)
                 throw new InvalidOperationException();
 
             var response = jdbcConnection.Bridge.Statement.createStatement(new CreateStatementRequest
@@ -277,7 +277,7 @@ namespace JDBC.NET.Data
             if (!IsPrepared)
                 return;
 
-            if (!(Connection is JdbcConnection jdbcConnection))
+            if (Connection is not JdbcConnection jdbcConnection)
                 throw new InvalidOperationException();
 
             jdbcConnection.Bridge.Statement.closeStatement(new CloseStatementRequest

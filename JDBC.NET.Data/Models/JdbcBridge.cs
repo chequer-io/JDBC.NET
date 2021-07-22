@@ -34,6 +34,8 @@ namespace JDBC.NET.Data.Models
 
         public DatabaseService.DatabaseServiceClient Database { get; private set; }
 
+        public MetaDataService.MetaDataServiceClient MetaData { get; private set; }
+
         public string Key => GenerateKey(DriverPath, DriverClass);
 
         public string DriverPath { get; }
@@ -84,6 +86,7 @@ namespace JDBC.NET.Data.Models
             Reader = new ReaderService.ReaderServiceClient(_channel);
             Statement = new StatementService.StatementServiceClient(_channel);
             Database = new DatabaseService.DatabaseServiceClient(_channel);
+            MetaData = new MetaDataService.MetaDataServiceClient(_channel);
 
             var loadDriverResponse = Driver.loadDriver(new LoadDriverRequest
             {

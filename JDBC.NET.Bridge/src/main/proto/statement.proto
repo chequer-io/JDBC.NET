@@ -21,7 +21,7 @@ enum ParameterType {
 
 service StatementService {
   rpc createStatement (CreateStatementRequest) returns (CreateStatementResponse);
-  rpc executeStatement (ExecuteStatementRequest) returns (ExecuteStatementResponse);
+  rpc executeStatement (ExecuteStatementRequest) returns (JdbcResultSetResponse);
   rpc cancelStatement (CancelStatementRequest) returns (google.protobuf.Empty);
   rpc closeStatement (CloseStatementRequest) returns (google.protobuf.Empty);
   rpc setParameter (SetParameterRequest) returns (google.protobuf.Empty);
@@ -39,13 +39,6 @@ message CreateStatementResponse {
 message ExecuteStatementRequest {
   string statementId = 1;
   int32 fetchSize = 2;
-}
-
-message ExecuteStatementResponse {
-  string resultSetId = 1;
-  int32 recordsAffected = 2;
-  bool hasRows = 4;
-  repeated JdbcDataColumn columns = 5;
 }
 
 message CancelStatementRequest {

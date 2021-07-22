@@ -16,13 +16,13 @@ namespace JDBC.NET.Data
         #region Properties
         private JdbcConnection Connection { get; }
 
-        private ExecuteStatementResponse Response { get; }
+        private JdbcResultSetResponse Response { get; }
 
         private AsyncDuplexStreamingCall<ReadResultSetRequest, ReadResultSetResponse> StreamingCall { get; }
         #endregion
 
         #region Constructor
-        internal JdbcDataEnumerator(JdbcConnection connection, ExecuteStatementResponse response)
+        internal JdbcDataEnumerator(JdbcConnection connection, JdbcResultSetResponse response)
         {
             Connection = connection;
             Response = response;

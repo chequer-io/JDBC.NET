@@ -46,6 +46,8 @@ namespace JDBC.NET.Data
             set => ConnectionStringBuilder = new JdbcConnectionStringBuilder(value);
         }
 
+        public JdbcMetaData MetaData { get; }
+
         public JdbcConnectionProperties ConnectionProperties { get; set; } = new();
 
         internal JdbcConnectionStringBuilder ConnectionStringBuilder { get; set; } = new();
@@ -62,16 +64,17 @@ namespace JDBC.NET.Data
         #region Constructor
         public JdbcConnection()
         {
-        }
-
-        public JdbcConnection(string connectionString, IEnumerable<KeyValuePair<string, string>> connectionProperties = null) : this(new JdbcConnectionStringBuilder(connectionString), connectionProperties)
-        {
+            MetaData = new JdbcMetaData(this);
         }
 
         public JdbcConnection(JdbcConnectionStringBuilder connectionStringBuilder, IEnumerable<KeyValuePair<string, string>> connectionProperties = null) : this()
         {
             ConnectionStringBuilder = connectionStringBuilder;
             ConnectionProperties = connectionProperties == null ? new JdbcConnectionProperties() : new JdbcConnectionProperties(connectionProperties);
+        }
+
+        public JdbcConnection(string connectionString, IEnumerable<KeyValuePair<string, string>> connectionProperties = null) : this(new JdbcConnectionStringBuilder(connectionString), connectionProperties)
+        {
         }
         #endregion
 
@@ -264,16 +267,16 @@ namespace JDBC.NET.Data
         }
         #endregion
 
-        #region Private Methods
-        private void CheckOpen()
+        #region Internal Methods
+        internal void CheckOpen()
         {
             CheckDispose();
 
-            if (_state == ConnectionState.Closed || _state == ConnectionState.Broken)
+            if (_state is ConnectionState.Closed or ConnectionState.Broken)
                 throw new InvalidOperationException("Connection is not open.");
         }
 
-        private void CheckDispose()
+        internal void CheckDispose()
         {
             if (_isDisposed)
                 throw new ObjectDisposedException(ToString());
