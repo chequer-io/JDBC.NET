@@ -81,6 +81,24 @@ namespace JDBC.NET.Data
                 return new JdbcDataReader(EmptyCommand, response);
             });
         }
+
+        public JdbcDataReader GetFunctions(string catalog = null, string schemaPattern = null, string functionNamePattern = null)
+        {
+            Connection.CheckOpen();
+
+            return JdbcException.Try(() =>
+            {
+                var response = Connection.Bridge.MetaData.getFunctions(new GetFunctionsRequest
+                {
+                    ConnectionId = Connection.ConnectionId,
+                    Catalog = catalog ?? string.Empty,
+                    SchemaPattern = schemaPattern ?? string.Empty,
+                    FunctionNamePattern = functionNamePattern ?? string.Empty
+                });
+
+                return new JdbcDataReader(EmptyCommand, response);
+            });
+        }
         #endregion
 
         #region Boolean Methods

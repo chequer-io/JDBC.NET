@@ -87,6 +87,32 @@ public class MetaDataServiceImpl extends MetaDataServiceGrpc.MetaDataServiceImpl
                     .asRuntimeException());
         }
     }
+
+    @Override
+    public void getFunctions(Metadata.GetFunctionsRequest request, StreamObserver<Common.JdbcResultSetResponse> responseObserver) {
+        try {
+            var metaData = ObjectManager.getConnection(request.getConnectionId()).getMetaData();
+
+            var resultSet = new ResultSetEx(metaData.getFunctions(
+                    Strings.emptyToNull(request.getCatalog()),
+                    Strings.emptyToNull(request.getSchemaPattern()),
+                    Strings.emptyToNull(request.getFunctionNamePattern())));
+
+            var resultSetId = ObjectManager.putResultSet(resultSet);
+
+            var responseBuilder = Common.JdbcResultSetResponse.newBuilder()
+                    .setResultSetId(resultSetId)
+                    .setHasRows(resultSet.getHasRows());
+
+            Utils.addColumns(responseBuilder, resultSet.getMetaData());
+            responseObserver.onNext(responseBuilder.build());
+            responseObserver.onCompleted();
+        } catch (Throwable e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
+        }
+    }
     //endregion
 
     //region Boolean Method

@@ -12,6 +12,7 @@ service MetaDataService {
   // ResultSet
   rpc getTables (GetTablesRequest) returns (JdbcResultSetResponse);
   rpc getCatalogs (GetMetaDataRequest) returns (JdbcResultSetResponse);
+  rpc getFunctions (GetFunctionsRequest) returns (JdbcResultSetResponse);
   rpc getProcedures (GetProceduresRequest) returns (JdbcResultSetResponse);
 
   // Boolean
@@ -25,6 +26,13 @@ message GetTablesRequest {
   string schemaPattern = 3;
   string tableNamePattern = 4;
   repeated string types = 5;
+}
+
+message GetFunctionsRequest {
+  string connectionId = 1;
+  string catalog = 2;
+  string schemaPattern = 3;
+  string functionNamePattern = 4;
 }
 
 message GetProceduresRequest {
