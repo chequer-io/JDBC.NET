@@ -11,6 +11,7 @@ import proto.statement.StatementServiceGrpc;
 
 import java.math.BigDecimal;
 import java.sql.*;
+import java.util.Optional;
 
 public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceImplBase {
     @Override
@@ -59,16 +60,16 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
 
                     responseBuilder.addColumns(Common.JdbcDataColumn.newBuilder()
                             .setOrdinal(i - 1)
-                            .setTableName(resultSetMetaData.getTableName(i))
-                            .setSchemaName(resultSetMetaData.getSchemaName(i))
-                            .setCatalogName(resultSetMetaData.getCatalogName(i))
-                            .setColumnName(columnName)
-                            .setColumnLabel(columnLabel)
+                            .setTableName(Optional.ofNullable(resultSetMetaData.getTableName(i)).orElse(""))
+                            .setSchemaName(Optional.ofNullable(resultSetMetaData.getSchemaName(i)).orElse(""))
+                            .setCatalogName(Optional.ofNullable(resultSetMetaData.getCatalogName(i)).orElse(""))
+                            .setColumnName(Optional.ofNullable(columnName).orElse(""))
+                            .setColumnLabel(Optional.ofNullable(columnLabel).orElse(""))
                             .setColumnDisplaySize(resultSetMetaData.getColumnDisplaySize(i))
                             .setColumnPrecision(resultSetMetaData.getPrecision(i))
                             .setColumnScale(resultSetMetaData.getScale(i))
-                            .setDataTypeName(resultSetMetaData.getColumnTypeName(i))
-                            .setDataTypeClassName(resultSetMetaData.getColumnClassName(i))
+                            .setDataTypeName(Optional.ofNullable(resultSetMetaData.getColumnTypeName(i)).orElse(""))
+                            .setDataTypeClassName(Optional.ofNullable(resultSetMetaData.getColumnClassName(i)).orElse(""))
                             .setDataTypeCode(resultSetMetaData.getColumnType(i))
                             .setIsAutoIncrement(resultSetMetaData.isAutoIncrement(i))
                             .setIsCaseSensitive(resultSetMetaData.isCaseSensitive(i))

@@ -8,6 +8,7 @@ import proto.database.Database;
 import proto.database.DatabaseServiceGrpc;
 
 import java.sql.DriverManager;
+import java.util.Optional;
 import java.util.Properties;
 
 public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImplBase {
@@ -25,12 +26,11 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
 
             var response = Database.OpenConnectionResponse.newBuilder()
                     .setConnectionId(connectionId)
-                    // TODO: 빈 Catalog에 대한 처리 필요함
-                    .setCatalog(connection.getCatalog() == null ? "" : connection.getCatalog())
+                    .setCatalog(Optional.ofNullable(connection.getCatalog()).orElse(""))
                     .setDatabaseMajorVersion(metaData.getDatabaseMajorVersion())
                     .setDatabaseMinorVersion(metaData.getDatabaseMinorVersion())
-                    .setDatabaseProductVersion(metaData.getDatabaseProductVersion())
-                    .setDatabaseProductName(metaData.getDatabaseProductName())
+                    .setDatabaseProductVersion(Optional.ofNullable(metaData.getDatabaseProductVersion()).orElse(""))
+                    .setDatabaseProductName(Optional.ofNullable(metaData.getDatabaseProductName()).orElse(""))
                     .build();
 
             responseObserver.onNext(response);
