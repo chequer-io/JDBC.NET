@@ -80,7 +80,7 @@ namespace JDBC.NET.Data.Models
             _process = JavaRuntime.Execute($"-XX:G1PeriodicGCInterval=5000 -cp \"{classPaths}\" com.chequer.jdbcnet.bridge.Main -p {port}");
             PortUtility.WaitForOpen(port);
 
-            _channel = new Channel($"{host}:{port}", ChannelCredentials.Insecure);
+            _channel = new JdbcChannel(host, port, ChannelCredentials.Insecure);
 
             Driver = new DriverService.DriverServiceClient(_channel);
             Reader = new ReaderService.ReaderServiceClient(_channel);

@@ -38,66 +38,54 @@ namespace JDBC.NET.Data
         {
             Connection.CheckOpen();
 
-            return JdbcException.Try(() =>
+            var response = Connection.Bridge.MetaData.getTables(new GetTablesRequest
             {
-                var response = Connection.Bridge.MetaData.getTables(new GetTablesRequest
-                {
-                    ConnectionId = Connection.ConnectionId,
-                    Catalog = catalog ?? string.Empty,
-                    SchemaPattern = schemaPattern ?? string.Empty,
-                    TableNamePattern = tableNamePattern ?? string.Empty,
-                    Types_ = { types ?? Array.Empty<string>() }
-                });
-
-                return new JdbcDataReader(EmptyCommand, response);
+                ConnectionId = Connection.ConnectionId,
+                Catalog = catalog ?? string.Empty,
+                SchemaPattern = schemaPattern ?? string.Empty,
+                TableNamePattern = tableNamePattern ?? string.Empty,
+                Types_ = { types ?? Array.Empty<string>() }
             });
+
+            return new JdbcDataReader(EmptyCommand, response);
         }
 
         public JdbcDataReader GetCatalogs()
         {
             Connection.CheckOpen();
 
-            return JdbcException.Try(() =>
-            {
-                var response = Connection.Bridge.MetaData.getCatalogs(CreateRequest());
-                return new JdbcDataReader(EmptyCommand, response);
-            });
+            var response = Connection.Bridge.MetaData.getCatalogs(CreateRequest());
+            return new JdbcDataReader(EmptyCommand, response);
         }
 
         public JdbcDataReader GetProcedures(string catalog = null, string schemaPattern = null, string procedureNamePattern = null)
         {
             Connection.CheckOpen();
 
-            return JdbcException.Try(() =>
+            var response = Connection.Bridge.MetaData.getProcedures(new GetProceduresRequest
             {
-                var response = Connection.Bridge.MetaData.getProcedures(new GetProceduresRequest
-                {
-                    ConnectionId = Connection.ConnectionId,
-                    Catalog = catalog ?? string.Empty,
-                    SchemaPattern = schemaPattern ?? string.Empty,
-                    ProcedureNamePattern = procedureNamePattern ?? string.Empty
-                });
-
-                return new JdbcDataReader(EmptyCommand, response);
+                ConnectionId = Connection.ConnectionId,
+                Catalog = catalog ?? string.Empty,
+                SchemaPattern = schemaPattern ?? string.Empty,
+                ProcedureNamePattern = procedureNamePattern ?? string.Empty
             });
+
+            return new JdbcDataReader(EmptyCommand, response);
         }
 
         public JdbcDataReader GetFunctions(string catalog = null, string schemaPattern = null, string functionNamePattern = null)
         {
             Connection.CheckOpen();
 
-            return JdbcException.Try(() =>
+            var response = Connection.Bridge.MetaData.getFunctions(new GetFunctionsRequest
             {
-                var response = Connection.Bridge.MetaData.getFunctions(new GetFunctionsRequest
-                {
-                    ConnectionId = Connection.ConnectionId,
-                    Catalog = catalog ?? string.Empty,
-                    SchemaPattern = schemaPattern ?? string.Empty,
-                    FunctionNamePattern = functionNamePattern ?? string.Empty
-                });
-
-                return new JdbcDataReader(EmptyCommand, response);
+                ConnectionId = Connection.ConnectionId,
+                Catalog = catalog ?? string.Empty,
+                SchemaPattern = schemaPattern ?? string.Empty,
+                FunctionNamePattern = functionNamePattern ?? string.Empty
             });
+
+            return new JdbcDataReader(EmptyCommand, response);
         }
         #endregion
 
@@ -105,13 +93,13 @@ namespace JDBC.NET.Data
         public bool IsReadOnly()
         {
             Connection.CheckOpen();
-            return JdbcException.Try(() => Connection.Bridge.MetaData.isReadOnly(CreateRequest()).Value);
+            return Connection.Bridge.MetaData.isReadOnly(CreateRequest()).Value;
         }
 
         public bool IsSupportsGroupBy()
         {
             Connection.CheckOpen();
-            return JdbcException.Try(() => Connection.Bridge.MetaData.supportsGroupBy(CreateRequest()).Value);
+            return Connection.Bridge.MetaData.supportsGroupBy(CreateRequest()).Value;
         }
         #endregion
     }

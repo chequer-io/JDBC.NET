@@ -221,21 +221,17 @@ namespace JDBC.NET.Data
 
             await PrepareAsync(cancellationToken);
 
-            try
-            {
-                var response = await jdbcConnection.Bridge.Statement.executeStatementAsync(new ExecuteStatementRequest
+            var response = await jdbcConnection.Bridge.Statement.executeStatementAsync(
+                new ExecuteStatementRequest
                 {
                     StatementId = StatementId,
                     FetchSize = FetchSize
-                });
+                },
+                cancellationToken: cancellationToken
+            );
 
-                _dataReader = new JdbcDataReader(this, response);
-                return _dataReader;
-            }
-            catch (RpcException ex)
-            {
-                throw new JdbcException(ex);
-            }
+            _dataReader = new JdbcDataReader(this, response);
+            return _dataReader;
         }
 
         public override void Cancel()

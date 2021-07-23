@@ -12,11 +12,11 @@ namespace JDBC.NET.Data
         {
         }
 
-        public JdbcConnectionProperties(IEqualityComparer<string>? comparer) : base(comparer)
+        public JdbcConnectionProperties(IEqualityComparer<string> comparer) : base(comparer)
         {
         }
 
-        public JdbcConnectionProperties(int capacity, IEqualityComparer<string>? comparer) : base(capacity, comparer)
+        public JdbcConnectionProperties(int capacity, IEqualityComparer<string> comparer) : base(capacity, comparer)
         {
         }
 
@@ -24,7 +24,7 @@ namespace JDBC.NET.Data
         {
         }
 
-        public JdbcConnectionProperties(IDictionary<string, string> dictionary, IEqualityComparer<string>? comparer) : base(dictionary, comparer)
+        public JdbcConnectionProperties(IDictionary<string, string> dictionary, IEqualityComparer<string> comparer) : base(dictionary, comparer)
         {
         }
 
@@ -32,7 +32,7 @@ namespace JDBC.NET.Data
         {
         }
 
-        public JdbcConnectionProperties(IEnumerable<KeyValuePair<string, string>> collection, IEqualityComparer<string>? comparer) : base(collection, comparer)
+        public JdbcConnectionProperties(IEnumerable<KeyValuePair<string, string>> collection, IEqualityComparer<string> comparer) : base(collection, comparer)
         {
         }
     }
