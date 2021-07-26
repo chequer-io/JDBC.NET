@@ -121,9 +121,6 @@ namespace JDBC.NET.Data
 
                     Bridge = JdbcBridgePool.Lease(ConnectionStringBuilder.DriverPath, ConnectionStringBuilder.DriverClass);
 
-                    using var timeoutToken = new CancellationTokenSource();
-                    timeoutToken.CancelAfter(ConnectionStringBuilder.ConnectionTimeout);
-
                     var response = Bridge.Database.openConnection(new OpenConnectionRequest
                     {
                         JdbcUrl = ConnectionStringBuilder.JdbcUrl,
@@ -131,7 +128,7 @@ namespace JDBC.NET.Data
                         {
                             ConnectionProperties
                         }
-                    }, cancellationToken: CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutToken.Token).Token);
+                    });
 
                     ConnectionId = response.ConnectionId;
                     _serverVersion = response.DatabaseProductVersion;

@@ -6,12 +6,6 @@ namespace JDBC.NET.Data
     public class JdbcConnectionStringBuilder : DbConnectionStringBuilder
     {
         #region Properties
-        public TimeSpan ConnectionTimeout
-        {
-            get => TimeSpan.FromMilliseconds(GetValue<double>(nameof(ConnectionTimeout)));
-            set => SetValue(nameof(ConnectionTimeout), value.TotalMilliseconds);
-        }
-
         public int FetchSize
         {
             get => GetValue<int>(nameof(FetchSize));
@@ -48,7 +42,6 @@ namespace JDBC.NET.Data
         {
             FetchSize = 10;
             ChunkSize = 1000;
-            ConnectionTimeout = TimeSpan.FromSeconds(15);
         }
 
         public JdbcConnectionStringBuilder(string connectionString) : this()
