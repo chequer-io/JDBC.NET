@@ -113,35 +113,34 @@ namespace JDBC.NET.Data
         {
             CheckDispose();
 
-            await Task.Run(() =>
+            await Task.Yield();
+
+            try
             {
-                try
+                _state = ConnectionState.Connecting;
+
+                Bridge = JdbcBridgePool.Lease(ConnectionStringBuilder.DriverPath, ConnectionStringBuilder.DriverClass);
+
+                var response = await Bridge.Database.openConnectionAsync(new OpenConnectionRequest
                 {
-                    _state = ConnectionState.Connecting;
-
-                    Bridge = JdbcBridgePool.Lease(ConnectionStringBuilder.DriverPath, ConnectionStringBuilder.DriverClass);
-
-                    var response = Bridge.Database.openConnection(new OpenConnectionRequest
+                    JdbcUrl = ConnectionStringBuilder.JdbcUrl,
+                    Properties =
                     {
-                        JdbcUrl = ConnectionStringBuilder.JdbcUrl,
-                        Properties =
-                        {
-                            ConnectionProperties
-                        }
-                    });
+                        ConnectionProperties
+                    }
+                }, cancellationToken: cancellationToken);
 
-                    ConnectionId = response.ConnectionId;
-                    _serverVersion = response.DatabaseProductVersion;
-                    _database = response.Catalog;
+                ConnectionId = response.ConnectionId;
+                _serverVersion = response.DatabaseProductVersion;
+                _database = response.Catalog;
 
-                    _state = ConnectionState.Open;
-                }
-                catch
-                {
-                    _state = ConnectionState.Broken;
-                    throw;
-                }
-            }, cancellationToken);
+                _state = ConnectionState.Open;
+            }
+            catch
+            {
+                _state = ConnectionState.Broken;
+                throw;
+            }
         }
 
         public override void Close()
@@ -163,28 +162,27 @@ namespace JDBC.NET.Data
         {
             CheckDispose();
 
-            await Task.Run(() =>
+            await Task.Yield();
+
+            try
             {
-                try
+                if (_state != ConnectionState.Closed && Bridge != null && ConnectionId != null)
                 {
-                    if (_state != ConnectionState.Closed && Bridge != null)
+                    await Bridge.Database.closeConnectionAsync(new CloseConnectionRequest
                     {
-                        Bridge.Database.closeConnection(new CloseConnectionRequest
-                        {
-                            ConnectionId = ConnectionId
-                        });
+                        ConnectionId = ConnectionId
+                    });
 
-                        JdbcBridgePool.Release(Bridge.Key);
-                    }
+                    JdbcBridgePool.Release(Bridge.Key);
+                }
 
-                    _state = ConnectionState.Closed;
-                }
-                catch
-                {
-                    _state = ConnectionState.Broken;
-                    throw;
-                }
-            });
+                _state = ConnectionState.Closed;
+            }
+            catch
+            {
+                _state = ConnectionState.Broken;
+                throw;
+            }
         }
 
         public new JdbcCommand CreateCommand()
