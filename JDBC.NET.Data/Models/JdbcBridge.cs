@@ -81,13 +81,15 @@ namespace JDBC.NET.Data.Models
 
             // TODO : Need to move Execute logic to J2NET
             var classPaths = string.Join(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":", jarPath, DriverPath);
-            var javaRunArgs = $"-XX:G1PeriodicGCInterval=5000 -cp \"{classPaths}\" com.chequer.jdbcnet.bridge.Main -p {port}";
+            var javaRunArgs = $"-XX:G1PeriodicGCInterval=5000";
 
             if (ConnectionProperties.TryGetValue("KRB5_CONFIG", out var krb5Config))
                 javaRunArgs += $" -Djava.security.krb5.conf={krb5Config}";
 
             if (ConnectionProperties.TryGetValue("JAAS_CONFIG", out var jaasConfig))
                 javaRunArgs += $" -Djava.security.auth.login.config={jaasConfig}";
+
+            javaRunArgs += $" -cp \"{classPaths}\" com.chequer.jdbcnet.bridge.Main -p {port}";
 
             _process = JavaRuntime.Execute(javaRunArgs);
             PortUtility.WaitForOpen(port);

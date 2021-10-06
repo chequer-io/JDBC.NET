@@ -191,10 +191,9 @@ namespace JDBC.NET.Data
 
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
         {
-            Task<DbDataReader> task = ExecuteDbDataReaderAsync(behavior, CancellationToken.None);
-
             try
             {
+                Task<DbDataReader> task = ExecuteDbDataReaderAsync(behavior, CancellationToken.None);
                 return task.Result;
             }
             catch (AggregateException e)
