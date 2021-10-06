@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="J2NET" Version="1.2.0" />
+    <PackageReference Include="J2NET" Version="1.1.0" />
     <PackageReference Include="Google.Protobuf" Version="3.14.0" />
     <PackageReference Include="Grpc" Version="2.34.0" />
     <PackageReference Include="Grpc.Tools" Version="2.34.0">
@@ -41,6 +41,7 @@
       <Pack>True</Pack>
       <Visible>False</Visible>
       <PackagePath>bridge</PackagePath>
+      <CopyToOutputDirectory Condition=" '$(Configuration)' == 'DEBUG' ">PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
