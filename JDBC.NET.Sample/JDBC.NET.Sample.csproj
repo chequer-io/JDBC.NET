@@ -20,10 +20,7 @@
   <ItemGroup Label="Development" Condition=" '$(RID)' == '' And '$(Packaging)' == '' ">
       <PackageReference Condition=" '$(OSPlatform)' == 'OSX' And '$(OSArchitecture)' == 'X64' " Include="J2NET.Runtime.Mac" Version="$(RuntimeVersion)" />
       <PackageReference Condition=" '$(OSPlatform)' == 'Linux' And '$(OSArchitecture)' == 'X64' " Include="J2NET.Runtime.Linux" Version="$(RuntimeVersion)" />
+      <PackageReference Condition=" '$(OSPlatform)' == 'Windows' And '$(OSArchitecture)' == 'X64' " Include="J2NET.Runtime.Win64" Version="$(RuntimeVersion)" />
       <PackageReference Condition=" '$(OSPlatform)' == 'Windows' And '$(OSArchitecture)' == 'X86' " Include="J2NET.Runtime.Win32" Version="$(RuntimeVersion)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="J2NET.Runtime.Win64" Version="1.1.1" />
   </ItemGroup>
 </Project>
