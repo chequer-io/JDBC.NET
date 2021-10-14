@@ -16,7 +16,9 @@ public class DatabaseServiceImpl extends DatabaseServiceGrpc.DatabaseServiceImpl
     public void openConnection(Database.OpenConnectionRequest request, StreamObserver<Database.OpenConnectionResponse> responseObserver) {
         try {
             var properties = new Properties();
-            properties.putAll(request.getPropertiesMap());
+            var propertiesMap = request.getPropertiesMap();
+
+            properties.putAll(propertiesMap);
 
             var connection = DriverManager.getConnection(request.getJdbcUrl(), properties);
             connection.setAutoCommit(true);

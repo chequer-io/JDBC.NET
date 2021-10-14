@@ -119,7 +119,7 @@ namespace JDBC.NET.Data
             {
                 _state = ConnectionState.Connecting;
 
-                Bridge = JdbcBridgePool.Lease(ConnectionStringBuilder.DriverPath, ConnectionStringBuilder.DriverClass);
+                Bridge = JdbcBridgePool.Lease(ConnectionStringBuilder.DriverPath, ConnectionStringBuilder.DriverClass, ConnectionProperties);
 
                 var response = await Bridge.Database.openConnectionAsync(new OpenConnectionRequest
                 {

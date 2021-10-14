@@ -41,6 +41,7 @@
       <Pack>True</Pack>
       <Visible>False</Visible>
       <PackagePath>bridge</PackagePath>
+      <CopyToOutputDirectory Condition=" '$(Configuration)' == 'DEBUG' ">PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

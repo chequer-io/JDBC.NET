@@ -12,7 +12,7 @@ namespace JDBC.NET.Data
 
         #region Public Methods
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public static JdbcBridge Lease(string driverPath, string driverClass)
+        public static JdbcBridge Lease(string driverPath, string driverClass, JdbcConnectionProperties connectionProperties)
         {
             var key = JdbcBridge.GenerateKey(driverPath, driverClass);
 
@@ -20,7 +20,7 @@ namespace JDBC.NET.Data
             {
                 reference = new JdbcBridgeReference
                 {
-                    Bridge = JdbcBridge.FromDriver(driverPath, driverClass)
+                    Bridge = JdbcBridge.FromDriver(driverPath, driverClass, connectionProperties)
                 };
 
                 _bridges.Add(key, reference);
