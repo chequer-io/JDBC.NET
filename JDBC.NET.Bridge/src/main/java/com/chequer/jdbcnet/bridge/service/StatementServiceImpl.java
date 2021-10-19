@@ -140,6 +140,7 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
 
                 case BOOLEAN:
                     statement.setBoolean(index, Boolean.parseBoolean(value));
+                    break;
 
                 case TIME:
                     statement.setTime(index, Time.valueOf(value));
