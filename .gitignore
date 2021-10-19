@@ -340,4 +340,9 @@ ASALocalRun/
 healthchecksdb
 
 # Java class files
-JDBC.NET.Bridge/target/
+JDBC.NET.Bridge/build/
+build/
+
+# Gradle 
+.gradle
+gradle

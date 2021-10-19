@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\JDBC.NET.Bridge\target\JDBC.NET.Bridge-1.0-SNAPSHOT-jar-with-dependencies.jar">
+    <None Include="..\build\JDBC.NET.Bridge-1.0-SNAPSHOT.jar">
       <Pack>True</Pack>
       <Visible>False</Visible>
       <PackagePath>bridge</PackagePath>
