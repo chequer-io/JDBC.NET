@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.InteropServices;
 using Grpc.Core;
 using J2NET;
@@ -36,7 +35,7 @@ namespace JDBC.NET.Data.Models
 
         public MetaDataService.MetaDataServiceClient MetaData { get; private set; }
 
-        public string Key => GenerateKey(DriverPath, DriverClass);
+        internal JdbcBridgePoolKey Key { get; }
 
         public string DriverPath { get; }
 
@@ -54,17 +53,12 @@ namespace JDBC.NET.Data.Models
         {
             DriverPath = driverPath;
             DriverClass = driverClass;
-
             ConnectionProperties = connectionProperties;
+            Key = JdbcBridgePoolKey.Create(driverPath, driverClass, connectionProperties);
         }
         #endregion
 
         #region Public Methods
-        internal static string GenerateKey(string driverPath, string driverClass)
-        {
-            return $"{driverPath}:{driverClass}";
-        }
-
         internal static JdbcBridge FromDriver(string driverPath, string driverClass, JdbcConnectionProperties connectionProperties)
         {
             var bridge = new JdbcBridge(driverPath, driverClass, connectionProperties);

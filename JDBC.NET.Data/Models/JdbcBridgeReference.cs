@@ -16,14 +16,14 @@ namespace JDBC.NET.Data.Models
         #endregion
 
         #region Public Methods
-        public void Increment()
+        public int Increment()
         {
-            Interlocked.Increment(ref _count);
+            return Interlocked.Increment(ref _count);
         }
 
-        public void Decrement()
+        public int Decrement()
         {
-            Interlocked.Decrement(ref _count);
+            return Interlocked.Decrement(ref _count);
         }
         #endregion
 
