@@ -7,7 +7,7 @@ namespace JDBC.NET.Data.Utilities
 {
     public static class PortUtility
     {
-        public static void WaitForOpen(int port, int retryCount = 5, int retryInterval = 1000)
+        public static void WaitForOpen(int port, int retryCount = 5, int retryInterval = 5000)
         {
             using var tcpClient = new TcpClient();
 
