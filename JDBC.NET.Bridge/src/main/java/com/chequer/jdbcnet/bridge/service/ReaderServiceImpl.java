@@ -81,6 +81,7 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
                         responseBuilder.addRows(rowBuilder.build());
 
                         if (readCount >= readResultSetRequest.getChunkSize()) {
+                            responseBuilder.setIsCompleted(!resultSet.next());
                             responseObserver.onNext(responseBuilder.build());
                             return;
                         }
