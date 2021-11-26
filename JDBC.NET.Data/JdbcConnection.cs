@@ -59,6 +59,8 @@ namespace JDBC.NET.Data
         internal JdbcTransaction CurrentTransaction { get; private set; }
 
         internal JdbcBridge Bridge { get; private set; }
+
+        public bool IsDisposed => _isDisposed;
         #endregion
 
         #region Constructor

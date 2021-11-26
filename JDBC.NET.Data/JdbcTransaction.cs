@@ -61,20 +61,23 @@ namespace JDBC.NET.Data
             if (IsDisposeed)
                 return;
 
-            if (IsolationLevelConverter.Convert(IsolationLevel) != OriginalLevel)
+            if (!_connection.IsDisposed)
             {
-                _connection.Bridge.Database.setTransactionIsolation(new SetTransactionIsolationRequest
+                if (IsolationLevelConverter.Convert(IsolationLevel) != OriginalLevel)
+                {
+                    _connection.Bridge.Database.setTransactionIsolation(new SetTransactionIsolationRequest
+                    {
+                        ConnectionId = _connection.ConnectionId,
+                        Isolation = OriginalLevel
+                    });
+                }
+
+                _connection.Bridge.Database.setAutoCommit(new SetAutoCommitRequest
                 {
                     ConnectionId = _connection.ConnectionId,
-                    Isolation = OriginalLevel
+                    UseAutoCommit = true
                 });
             }
-
-            _connection.Bridge.Database.setAutoCommit(new SetAutoCommitRequest
-            {
-                ConnectionId = _connection.ConnectionId,
-                UseAutoCommit = true
-            });
 
             base.Dispose(disposing);
             IsDisposeed = true;
