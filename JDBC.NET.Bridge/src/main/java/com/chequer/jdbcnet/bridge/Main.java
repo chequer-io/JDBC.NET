@@ -21,18 +21,15 @@ public class Main {
                 .build()
                 .start();
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                try {
-                    if (server != null) {
-                        server.shutdown().awaitTermination(30, TimeUnit.SECONDS);
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace(System.err);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                if (server != null) {
+                    server.shutdown().awaitTermination(30, TimeUnit.SECONDS);
                 }
+            } catch (InterruptedException e) {
+                e.printStackTrace(System.err);
             }
-        });
+        }));
     }
 
     private static void blockUntilShutdown() throws InterruptedException {
