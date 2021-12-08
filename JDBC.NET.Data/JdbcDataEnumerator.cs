@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using Grpc.Core;
+using JDBC.NET.Data.Models;
+using JDBC.NET.Data.Utilities;
 using JDBC.NET.Proto;
 
 namespace JDBC.NET.Data
@@ -54,7 +56,32 @@ namespace JDBC.NET.Data
                     return false;
 
                 _currentResponse = StreamingCall.ResponseStream.Current;
-                _currentChunk = _currentResponse.Rows.GetEnumerator();
+                
+                ReadOnlySpan<byte> currentRowsSpan = _currentResponse.Rows.Span;
+                var spanReader = new UnsafeSpanReader(currentRowsSpan);
+                var rows = new List<JdbcDataRow>();
+                
+                while (spanReader.Length > spanReader.Position)
+                {
+                    var row = new JdbcDataRow();
+                    var columnCount = spanReader.ReadInt32();
+
+                    for (int i = 0; i < columnCount; i++)
+                    {
+                        var type = (JdbcItemType)spanReader.ReadByte();
+                        var length = spanReader.ReadInt32();
+
+                        row.Items.Add(new JdbcDataItem
+                        {
+                            Value = spanReader.ReadBytes(length),
+                            Type = type
+                        });
+                    }
+
+                    rows.Add(row);
+                }
+                
+                _currentChunk = rows.GetEnumerator();
             }
 
             if (_currentChunk?.MoveNext() == false)

@@ -4,6 +4,13 @@ option csharp_namespace = "JDBC.NET.Proto";
 
 package proto;
 
+enum JdbcItemType {
+  NULL = 0;
+  TEXT = 1;
+  BINARY = 2;
+  UNKNOWN = 3;
+}
+
 message JdbcResultSetResponse {
   string resultSetId = 1;
   int32 recordsAffected = 2;
@@ -34,16 +41,4 @@ message JdbcDataColumn {
   bool isCurrency = 20;
   bool isReadOnly = 21;
   bool isSigned = 22;
-}
-
-message JdbcDataRow {
-  repeated JdbcDataItem items = 1;
-}
-
-message JdbcDataItem {
-  oneof value {
-    string text = 1;
-    bytes byteArray = 2;
-  }
-  bool isNull = 3;
 }

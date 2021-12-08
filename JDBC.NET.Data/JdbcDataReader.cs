@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Data;
 using System.Data.Common;
+using System.Text;
 using JDBC.NET.Data.Converters;
 using JDBC.NET.Data.Models;
 using JDBC.NET.Proto;
@@ -74,13 +75,13 @@ namespace JDBC.NET.Data
 
             var item = _enumerator.Current.Items[ordinal];
 
-            if (item.IsNull)
+            if (item.Type is JdbcItemType.Null)
                 return DBNull.Value;
-
-            if (item.ValueCase == JdbcDataItem.ValueOneofCase.ByteArray)
-                return item.ByteArray.ToByteArray();
-
-            var textValue = item.Text;
+            
+            if (item.Type is JdbcItemType.Binary)
+                return item.Value;
+            
+            var textValue = Encoding.UTF8.GetString(item.Value);
 
             try
             {

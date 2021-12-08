@@ -18,7 +18,7 @@ message ReadResultSetRequest {
 }
 
 message ReadResultSetResponse {
-  repeated JdbcDataRow rows = 1;
+  bytes rows = 1;
   bool isCompleted = 2;
 }
 
