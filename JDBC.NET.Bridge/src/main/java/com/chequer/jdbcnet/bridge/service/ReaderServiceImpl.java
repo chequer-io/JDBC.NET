@@ -5,19 +5,21 @@ import com.chequer.jdbcnet.bridge.utils.Utils;
 import com.google.protobuf.Empty;
 import com.google.protobuf.UnsafeByteOperations;
 import io.grpc.Status;
+import io.grpc.netty.shaded.io.netty.buffer.ByteBuf;
+import io.grpc.netty.shaded.io.netty.buffer.Unpooled;
 import io.grpc.stub.StreamObserver;
 import proto.Common;
 import proto.reader.Reader;
 import proto.reader.ReaderServiceGrpc;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.Clob;
 
 public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
+    private ByteBuf _responseBuffer;
+
     @Override
     public StreamObserver<Reader.ReadResultSetRequest> readResultSet(final StreamObserver<Reader.ReadResultSetResponse> responseObserver) {
         return new StreamObserver<>() {
@@ -27,8 +29,10 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
                     var resultSetMetaData = resultSet.getMetaData();
                     var responseBuilder = Reader.ReadResultSetResponse.newBuilder();
 
-                    var inMemoryStream = new ByteArrayOutputStream();
-                    var responseWriter = new DataOutputStream(inMemoryStream);
+                    if (_responseBuffer != null)
+                        _responseBuffer.release();
+
+                    _responseBuffer = Unpooled.buffer();
 
                     int readCount = 0;
                     do {
@@ -38,18 +42,18 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
                         readCount++;
 
                         var columnCount = resultSetMetaData.getColumnCount();
-                        responseWriter.write(Utils.intToBytes(columnCount));
+                        _responseBuffer.writeBytes(Utils.intToBytes(columnCount));
 
                         for (int i = 1; i <= columnCount; i++) {
                             var value = resultSet.getObject(i);
 
                             if (value == null) {
-                                responseWriter.write((byte)Common.JdbcItemType.NULL_VALUE);
+                                _responseBuffer.writeByte((byte)Common.JdbcItemType.NULL_VALUE);
                             } else if (value.getClass() == byte[].class) {
                                 var byteValue = (byte[]) value;
-                                responseWriter.write((byte)Common.JdbcItemType.BINARY_VALUE);
-                                responseWriter.write(Utils.intToBytes(byteValue.length));
-                                responseWriter.write(byteValue);
+                                _responseBuffer.writeByte((byte)Common.JdbcItemType.BINARY_VALUE);
+                                _responseBuffer.writeBytes(Utils.intToBytes(byteValue.length));
+                                _responseBuffer.writeBytes(byteValue);
                             } else if (value instanceof Clob) {
                                 var reader = ((Clob) value).getCharacterStream();
 
@@ -62,14 +66,14 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
                                 }
 
                                 var clobValue = builder.toString().getBytes(StandardCharsets.UTF_8);
-                                responseWriter.write((byte)Common.JdbcItemType.TEXT_VALUE);
-                                responseWriter.write(Utils.intToBytes(clobValue.length));
-                                responseWriter.write(clobValue);
+                                _responseBuffer.writeByte((byte)Common.JdbcItemType.TEXT_VALUE);
+                                _responseBuffer.writeBytes(Utils.intToBytes(clobValue.length));
+                                _responseBuffer.writeBytes(clobValue);
                             } else if (value instanceof Blob) {
                                 var blobValue = ((Blob) value).getBinaryStream().readAllBytes();
-                                responseWriter.write((byte)Common.JdbcItemType.BINARY_VALUE);
-                                responseWriter.write(Utils.intToBytes(blobValue.length));
-                                responseWriter.write(blobValue);
+                                _responseBuffer.writeByte((byte)Common.JdbcItemType.BINARY_VALUE);
+                                _responseBuffer.writeBytes(Utils.intToBytes(blobValue.length));
+                                _responseBuffer.writeBytes(blobValue);
                             } else if (value instanceof Array) {
                                 var byteString = new StringBuilder("{");
 
@@ -89,22 +93,18 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
                                 byteString.append("}");
 
                                 var arrayValue = byteString.toString().getBytes(StandardCharsets.UTF_8);
-                                responseWriter.write((byte)Common.JdbcItemType.TEXT_VALUE);
-                                responseWriter.write(Utils.intToBytes(arrayValue.length));
-                                responseWriter.write(arrayValue);
+                                _responseBuffer.writeByte((byte)Common.JdbcItemType.TEXT_VALUE);
+                                _responseBuffer.writeBytes(Utils.intToBytes(arrayValue.length));
+                                _responseBuffer.writeBytes(arrayValue);
                             } else {
                                 var textValue = value.toString().getBytes(StandardCharsets.UTF_8);
-                                responseWriter.write((byte)Common.JdbcItemType.TEXT_VALUE);
-                                responseWriter.write(Utils.intToBytes(textValue.length));
-                                responseWriter.write(textValue);
+                                _responseBuffer.writeByte((byte)Common.JdbcItemType.TEXT_VALUE);
+                                _responseBuffer.writeBytes(Utils.intToBytes(textValue.length));
+                                _responseBuffer.writeBytes(textValue);
                             }
                         }
 
-                        responseWriter.flush();
-                        inMemoryStream.flush();
-
-                        responseBuilder.setRows(UnsafeByteOperations.unsafeWrap(inMemoryStream.toByteArray()));
-                        inMemoryStream.close();
+                        responseBuilder.setRows(UnsafeByteOperations.unsafeWrap(_responseBuffer.nioBuffer()));
 
                         if (readCount >= readResultSetRequest.getChunkSize()) {
                             responseBuilder.setIsCompleted(!resultSet.next());
