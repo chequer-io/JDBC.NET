@@ -75,7 +75,7 @@ namespace JDBC.NET.Data
 
                         var length = spanReader.ReadInt32();
 
-                        row.Items.Add(new JdbcDataItem
+                        row.Add(new JdbcDataItem
                         {
                             Value = spanReader.ReadBytes(length),
                             Type = type

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using System.Text;
 using JDBC.NET.Data.Converters;
 using JDBC.NET.Data.Models;
@@ -15,6 +16,7 @@ namespace JDBC.NET.Data
         private bool _isClosed;
         private bool _isDisposed;
         private DataTable _schemaTable;
+        private Type[] _cachedFieldType;
         private readonly JdbcDataEnumerator _enumerator;
         #endregion
 
@@ -73,27 +75,34 @@ namespace JDBC.NET.Data
             if (_enumerator.Current == null)
                 throw new ArgumentNullException();
 
-            var item = _enumerator.Current.Items[ordinal];
+            var item = _enumerator.Current[ordinal];
 
-            if (item.Type is JdbcItemType.Null)
-                return DBNull.Value;
-            
-            if (item.Type is JdbcItemType.Binary)
-                return item.Value;
-            
-            var textValue = Encoding.UTF8.GetString(item.Value);
-
-            try
+            switch (item.Type)
             {
-                var fieldType = GetFieldType(ordinal);
+                case JdbcItemType.Null:
+                    return DBNull.Value;
 
-                return fieldType != null
-                    ? Convert.ChangeType(textValue, fieldType)
-                    : textValue;
-            }
-            catch (InvalidCastException)
-            {
-                return textValue;
+                case JdbcItemType.Binary:
+                    return item.Value;
+
+                default:
+                {
+                    var textValue = Encoding.UTF8.GetString(item.Value);
+
+                    try
+                    {
+                        var fieldType = GetFieldType(ordinal);
+
+                        if (fieldType is null || fieldType == typeof(string))
+                            return textValue;
+
+                        return Convert.ChangeType(textValue, fieldType);
+                    }
+                    catch (InvalidCastException)
+                    {
+                        return textValue;
+                    }
+                }
             }
         }
 
@@ -137,8 +146,10 @@ namespace JDBC.NET.Data
                 _schemaTable.Columns.Add("DataTypeName", typeof(string));
                 _schemaTable.Columns.Add(SchemaTableColumn.IsKey, typeof(bool));
 
-                foreach (var column in Response.Columns)
+                for (var i = 0; i < Response.Columns.Count; i++)
                 {
+                    var column = Response.Columns[i];
+
                     _schemaTable.Rows.Add(
                         column.ColumnLabel,
                         column.ColumnDisplaySize,
@@ -160,7 +171,7 @@ namespace JDBC.NET.Data
                         column.IsReadOnly,
                         false,
                         column.IsSigned,
-                        JdbcTypeConverter.ToType((JdbcDataTypeCode)column.DataTypeCode),
+                        GetCachedFieldType(i),
                         column.DataTypeClassName,
                         column.DataTypeName,
                         false
@@ -194,7 +205,7 @@ namespace JDBC.NET.Data
 
         public override Type GetFieldType(int ordinal)
         {
-            return (Type)GetSchemaTable()?.Rows[ordinal][SchemaTableColumn.DataType];
+            return GetCachedFieldType(ordinal);
         }
 
         public override short GetInt16(int ordinal)
@@ -274,6 +285,13 @@ namespace JDBC.NET.Data
         #endregion
 
         #region Private Methods
+        private Type GetCachedFieldType(int ordinal)
+        {
+            return (_cachedFieldType ??= Response.Columns
+                .Select(x => JdbcTypeConverter.ToType((JdbcDataTypeCode)x.DataTypeCode))
+                .ToArray())[ordinal];
+        }
+
         private void CheckOpen()
         {
             CheckDispose();

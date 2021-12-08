@@ -12,8 +12,8 @@ import java.util.Optional;
 public class Utils {
     private static final byte[] HEX_ARRAY = "0123456789ABCDEF".getBytes(StandardCharsets.US_ASCII);
 
-    public static byte[] intToBytes(int value){
-        return ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(value).array();
+    public static ByteBuffer intToBytes(int value){
+        return ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(value).flip();
     }
 
     public static String bytesToHex(byte[] bytes) {

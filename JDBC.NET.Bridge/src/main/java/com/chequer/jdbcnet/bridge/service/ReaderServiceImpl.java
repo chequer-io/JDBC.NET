@@ -5,7 +5,6 @@ import com.chequer.jdbcnet.bridge.utils.Utils;
 import com.google.protobuf.Empty;
 import com.google.protobuf.UnsafeByteOperations;
 import io.grpc.Status;
-import io.grpc.netty.shaded.io.netty.buffer.ByteBuf;
 import io.grpc.netty.shaded.io.netty.buffer.ByteBufAllocator;
 import io.grpc.stub.StreamObserver;
 import proto.Common;
@@ -18,8 +17,6 @@ import java.sql.Blob;
 import java.sql.Clob;
 
 public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
-    private ByteBuf _responseBuffer;
-
     @Override
     public StreamObserver<Reader.ReadResultSetRequest> readResultSet(final StreamObserver<Reader.ReadResultSetResponse> responseObserver) {
         return new StreamObserver<>() {
@@ -28,94 +25,94 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
                     var resultSet = ObjectManager.getResultSet(readResultSetRequest.getResultSetId());
                     var resultSetMetaData = resultSet.getMetaData();
                     var responseBuilder = Reader.ReadResultSetResponse.newBuilder();
-
-                    if (_responseBuffer != null)
-                        _responseBuffer.release();
-
-                    _responseBuffer = ByteBufAllocator.DEFAULT.buffer();
-
+                    var responseBuffer = ByteBufAllocator.DEFAULT.buffer();
                     int readCount = 0;
-                    do {
-                        if (!resultSet.getHasRows())
-                            break;
 
-                        readCount++;
+                    try {
+                        do {
+                            if (!resultSet.getHasRows())
+                                break;
 
-                        var columnCount = resultSetMetaData.getColumnCount();
-                        _responseBuffer.writeBytes(Utils.intToBytes(columnCount));
+                            readCount++;
 
-                        for (int i = 1; i <= columnCount; i++) {
-                            var value = resultSet.getObject(i);
+                            var columnCount = resultSetMetaData.getColumnCount();
+                            responseBuffer.writeBytes(Utils.intToBytes(columnCount));
 
-                            if (value == null) {
-                                _responseBuffer.writeByte((byte)Common.JdbcItemType.NULL_VALUE);
-                            } else if (value.getClass() == byte[].class) {
-                                var byteValue = (byte[]) value;
-                                _responseBuffer.writeByte((byte)Common.JdbcItemType.BINARY_VALUE);
-                                _responseBuffer.writeBytes(Utils.intToBytes(byteValue.length));
-                                _responseBuffer.writeBytes(byteValue);
-                            } else if (value instanceof Clob) {
-                                var reader = ((Clob) value).getCharacterStream();
+                            for (int i = 1; i <= columnCount; i++) {
+                                var value = resultSet.getObject(i);
 
-                                var builder = new StringBuilder();
+                                if (value == null) {
+                                    responseBuffer.writeByte((byte) Common.JdbcItemType.NULL_VALUE);
+                                } else if (value.getClass() == byte[].class) {
+                                    var byteValue = (byte[]) value;
+                                    responseBuffer.writeByte((byte) Common.JdbcItemType.BINARY_VALUE);
+                                    responseBuffer.writeBytes(Utils.intToBytes(byteValue.length));
+                                    responseBuffer.writeBytes(byteValue);
+                                } else if (value instanceof Clob) {
+                                    var reader = ((Clob) value).getCharacterStream();
 
-                                while (true) {
-                                    var data = reader.read();
-                                    if (data == -1) break;
-                                    builder.append((char) data);
-                                }
+                                    var builder = new StringBuilder();
 
-                                var clobValue = builder.toString().getBytes(StandardCharsets.UTF_8);
-                                _responseBuffer.writeByte((byte)Common.JdbcItemType.TEXT_VALUE);
-                                _responseBuffer.writeBytes(Utils.intToBytes(clobValue.length));
-                                _responseBuffer.writeBytes(clobValue);
-                            } else if (value instanceof Blob) {
-                                var blobValue = ((Blob) value).getBinaryStream().readAllBytes();
-                                _responseBuffer.writeByte((byte)Common.JdbcItemType.BINARY_VALUE);
-                                _responseBuffer.writeBytes(Utils.intToBytes(blobValue.length));
-                                _responseBuffer.writeBytes(blobValue);
-                            } else if (value instanceof Array) {
-                                var byteString = new StringBuilder("{");
-
-                                var arr = ((Object[]) ((Array) value).getArray());
-                                for (Object v : arr) {
-                                    if (byteString.length() > 1) {
-                                        byteString.append(", ");
+                                    while (true) {
+                                        var data = reader.read();
+                                        if (data == -1) break;
+                                        builder.append((char) data);
                                     }
 
-                                    if (v.getClass() == byte[].class) {
-                                        byteString.append(Utils.bytesToHex((byte[]) v));
-                                    } else {
-                                        byteString.append(v);
+                                    var clobValue = builder.toString().getBytes(StandardCharsets.UTF_8);
+                                    responseBuffer.writeByte((byte) Common.JdbcItemType.TEXT_VALUE);
+                                    responseBuffer.writeBytes(Utils.intToBytes(clobValue.length));
+                                    responseBuffer.writeBytes(clobValue);
+                                } else if (value instanceof Blob) {
+                                    var blobValue = ((Blob) value).getBinaryStream().readAllBytes();
+                                    responseBuffer.writeByte((byte) Common.JdbcItemType.BINARY_VALUE);
+                                    responseBuffer.writeBytes(Utils.intToBytes(blobValue.length));
+                                    responseBuffer.writeBytes(blobValue);
+                                } else if (value instanceof Array) {
+                                    var byteString = new StringBuilder("{");
+
+                                    var arr = ((Object[]) ((Array) value).getArray());
+                                    for (Object v : arr) {
+                                        if (byteString.length() > 1) {
+                                            byteString.append(", ");
+                                        }
+
+                                        if (v.getClass() == byte[].class) {
+                                            byteString.append(Utils.bytesToHex((byte[]) v));
+                                        } else {
+                                            byteString.append(v);
+                                        }
                                     }
+
+                                    byteString.append("}");
+
+                                    var arrayValue = byteString.toString().getBytes(StandardCharsets.UTF_8);
+                                    responseBuffer.writeByte((byte) Common.JdbcItemType.TEXT_VALUE);
+                                    responseBuffer.writeBytes(Utils.intToBytes(arrayValue.length));
+                                    responseBuffer.writeBytes(arrayValue);
+                                } else {
+                                    var textValue = value.toString().getBytes(StandardCharsets.UTF_8);
+                                    responseBuffer.writeByte((byte) Common.JdbcItemType.TEXT_VALUE);
+                                    responseBuffer.writeBytes(Utils.intToBytes(textValue.length));
+                                    responseBuffer.writeBytes(textValue);
                                 }
-
-                                byteString.append("}");
-
-                                var arrayValue = byteString.toString().getBytes(StandardCharsets.UTF_8);
-                                _responseBuffer.writeByte((byte)Common.JdbcItemType.TEXT_VALUE);
-                                _responseBuffer.writeBytes(Utils.intToBytes(arrayValue.length));
-                                _responseBuffer.writeBytes(arrayValue);
-                            } else {
-                                var textValue = value.toString().getBytes(StandardCharsets.UTF_8);
-                                _responseBuffer.writeByte((byte)Common.JdbcItemType.TEXT_VALUE);
-                                _responseBuffer.writeBytes(Utils.intToBytes(textValue.length));
-                                _responseBuffer.writeBytes(textValue);
                             }
-                        }
 
-                        responseBuilder.setRows(UnsafeByteOperations.unsafeWrap(_responseBuffer.nioBuffer()));
+                            responseBuilder.setRows(UnsafeByteOperations.unsafeWrap(responseBuffer.nioBuffer()));
 
-                        if (readCount >= readResultSetRequest.getChunkSize()) {
-                            responseBuilder.setIsCompleted(!resultSet.next());
+                            if (readCount >= readResultSetRequest.getChunkSize()) {
+                                responseBuilder.setIsCompleted(!resultSet.next());
+                                responseObserver.onNext(responseBuilder.build());
+                                return;
+                            }
+                        } while (resultSet.next());
+
+                        if (readCount > 0) {
+                            responseBuilder.setIsCompleted(true);
                             responseObserver.onNext(responseBuilder.build());
-                            return;
                         }
-                    } while (resultSet.next());
-
-                    if (readCount > 0) {
-                        responseBuilder.setIsCompleted(true);
-                        responseObserver.onNext(responseBuilder.build());
+                    } finally {
+                        responseBuffer.release();
                     }
 
                     onCompleted();
