@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using Grpc.Core;
 using J2NET;
@@ -20,8 +21,9 @@ namespace JDBC.NET.Data.Models
 #if !DEBUG
         private const string jarPath = @"JDBC.NET.Bridge.jar";
 #else
-        private readonly string jarPath = "JDBC.NET.Bridge-1.0-SNAPSHOT-jar-with-dependencies.jar";
+        private const string jarPath = "JDBC.NET.Bridge-1.0-SNAPSHOT-jar-with-dependencies.jar";
 #endif
+        private const string unixEndPointName = "/tmp/jdbc.net";
         #endregion
 
         #region Properties
@@ -71,25 +73,7 @@ namespace JDBC.NET.Data.Models
         #region Private Methods
         private void Initialize()
         {
-            var port = PortUtility.GetFreeTcpPort();
-
-            // TODO : Need to move Execute logic to J2NET
-            var classPaths = string.Join(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":", jarPath, DriverPath);
-            var javaRunArgs = $"-XX:G1PeriodicGCInterval=5000";
-
-            if (ConnectionProperties.TryGetValue("KRB5_CONFIG", out var krb5Config))
-                javaRunArgs += $" -Djava.security.krb5.conf={krb5Config}";
-
-            if (ConnectionProperties.TryGetValue("JAAS_CONFIG", out var jaasConfig))
-                javaRunArgs += $" -Djava.security.auth.login.config={jaasConfig}";
-
-            javaRunArgs += $" -cp \"{classPaths}\" com.chequer.jdbcnet.bridge.Main -p {port}";
-
-            _process = JavaRuntime.Execute(javaRunArgs);
-            PortUtility.WaitForOpen(port);
-
-            _channel = new JdbcChannel(host, port, ChannelCredentials.Insecure);
-
+            _channel = CreateChannel();
             Driver = new DriverService.DriverServiceClient(_channel);
             Reader = new ReaderService.ReaderServiceClient(_channel);
             Statement = new StatementService.StatementServiceClient(_channel);
@@ -103,6 +87,39 @@ namespace JDBC.NET.Data.Models
 
             DriverMajorVersion = loadDriverResponse.MajorVersion;
             DriverMinorVersion = loadDriverResponse.MinorVersion;
+        }
+
+        private Channel CreateChannel()
+        {
+            var classPaths = string.Join(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":", jarPath, DriverPath);
+            var javaRunArgs = $"-XX:G1PeriodicGCInterval=5000";
+
+            if (ConnectionProperties.TryGetValue("KRB5_CONFIG", out var krb5Config))
+                javaRunArgs += $" -Djava.security.krb5.conf={krb5Config}";
+
+            if (ConnectionProperties.TryGetValue("JAAS_CONFIG", out var jaasConfig))
+                javaRunArgs += $" -Djava.security.auth.login.config={jaasConfig}";
+
+            javaRunArgs += $" -cp \"{classPaths}\" com.chequer.jdbcnet.bridge.Main";
+
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                javaRunArgs += $" -n {unixEndPointName}";
+                _process = JavaRuntime.Execute(javaRunArgs);
+
+                using var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
+                SocketUtility.WaitForOpen(socket, new UnixDomainSocketEndPoint(unixEndPointName));
+
+                return new JdbcChannel($"unix:{unixEndPointName}", ChannelCredentials.Insecure);
+            }
+
+            var port = PortUtility.GetFreeTcpPort();
+            javaRunArgs += $" -p {port}";
+
+            _process = JavaRuntime.Execute(javaRunArgs);
+            PortUtility.WaitForOpen(port);
+
+            return new JdbcChannel(host, port, ChannelCredentials.Insecure);
         }
         #endregion
 
