@@ -40,7 +40,7 @@ namespace JDBC.NET.Data.Utilities
                 var localEP = new IPEndPoint(IPAddress.Any, 0);
                 socket.Bind(localEP);
                 localEP = (IPEndPoint)socket.LocalEndPoint;
-                port = localEP.Port;
+                port = localEP?.Port ?? default;
             }
             finally
             {

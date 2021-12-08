@@ -56,11 +56,11 @@ namespace JDBC.NET.Data
                     return false;
 
                 _currentResponse = StreamingCall.ResponseStream.Current;
-                
+
                 ReadOnlySpan<byte> currentRowsSpan = _currentResponse.Rows.Span;
                 var spanReader = new UnsafeSpanReader(currentRowsSpan);
                 var rows = new List<JdbcDataRow>();
-                
+
                 while (spanReader.Length > spanReader.Position)
                 {
                     var row = new JdbcDataRow();
@@ -69,6 +69,10 @@ namespace JDBC.NET.Data
                     for (int i = 0; i < columnCount; i++)
                     {
                         var type = (JdbcItemType)spanReader.ReadByte();
+
+                        if (type is JdbcItemType.Null)
+                            continue;
+
                         var length = spanReader.ReadInt32();
 
                         row.Items.Add(new JdbcDataItem
@@ -80,7 +84,7 @@ namespace JDBC.NET.Data
 
                     rows.Add(row);
                 }
-                
+
                 _currentChunk = rows.GetEnumerator();
             }
 

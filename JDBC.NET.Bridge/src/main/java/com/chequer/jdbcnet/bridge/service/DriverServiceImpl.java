@@ -13,6 +13,7 @@ public class DriverServiceImpl extends DriverServiceGrpc.DriverServiceImplBase {
         try {
             // Load Class from driver
             var driver = getDriverByClass(Class.forName(request.getClassName()));
+            System.out.println("Driver class '" + request.getClassName() + "' loaded successfully.");
 
             // Return response
             var response = Driver.LoadDriverResponse.newBuilder()

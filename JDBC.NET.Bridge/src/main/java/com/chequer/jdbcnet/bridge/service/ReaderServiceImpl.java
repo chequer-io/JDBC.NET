@@ -6,7 +6,7 @@ import com.google.protobuf.Empty;
 import com.google.protobuf.UnsafeByteOperations;
 import io.grpc.Status;
 import io.grpc.netty.shaded.io.netty.buffer.ByteBuf;
-import io.grpc.netty.shaded.io.netty.buffer.Unpooled;
+import io.grpc.netty.shaded.io.netty.buffer.ByteBufAllocator;
 import io.grpc.stub.StreamObserver;
 import proto.Common;
 import proto.reader.Reader;
@@ -32,7 +32,7 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
                     if (_responseBuffer != null)
                         _responseBuffer.release();
 
-                    _responseBuffer = Unpooled.buffer();
+                    _responseBuffer = ByteBufAllocator.DEFAULT.buffer();
 
                     int readCount = 0;
                     do {
