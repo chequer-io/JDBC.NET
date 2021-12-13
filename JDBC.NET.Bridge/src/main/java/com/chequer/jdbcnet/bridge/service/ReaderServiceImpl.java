@@ -26,18 +26,10 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
                     var resultSetMetaData = resultSet.getMetaData();
                     var responseBuilder = Reader.ReadResultSetResponse.newBuilder();
                     var responseBuffer = ByteBufAllocator.DEFAULT.buffer();
-                    int readCount = 0;
+                    var columnCount = resultSetMetaData.getColumnCount();
 
                     try {
-                        do {
-                            if (!resultSet.getHasRows())
-                                break;
-
-                            readCount++;
-
-                            var columnCount = resultSetMetaData.getColumnCount();
-                            responseBuffer.writeBytes(Utils.intToBytes(columnCount));
-
+                        while (resultSet.getHasRows()) {
                             for (int i = 1; i <= columnCount; i++) {
                                 var value = resultSet.getObject(i);
 
@@ -98,16 +90,20 @@ public class ReaderServiceImpl extends ReaderServiceGrpc.ReaderServiceImplBase {
                                 }
                             }
 
-                            responseBuilder.setRows(UnsafeByteOperations.unsafeWrap(responseBuffer.nioBuffer()));
-
-                            if (readCount >= readResultSetRequest.getChunkSize()) {
+                            if (responseBuffer.readableBytes() >= readResultSetRequest.getChunkSize()) {
+                                responseBuilder.setRows(UnsafeByteOperations.unsafeWrap(responseBuffer.nioBuffer()));
                                 responseBuilder.setIsCompleted(!resultSet.next());
                                 responseObserver.onNext(responseBuilder.build());
                                 return;
                             }
-                        } while (resultSet.next());
 
-                        if (readCount > 0) {
+                            if (!resultSet.next()) {
+                                break;
+                            }
+                        }
+
+                        if (responseBuilder.getRows() != null) {
+                            responseBuilder.setRows(UnsafeByteOperations.unsafeWrap(responseBuffer.nioBuffer()));
                             responseBuilder.setIsCompleted(true);
                             responseObserver.onNext(responseBuilder.build());
                         }

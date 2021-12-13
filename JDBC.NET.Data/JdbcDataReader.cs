@@ -71,47 +71,20 @@ namespace JDBC.NET.Data
         public override object GetValue(int ordinal)
         {
             CheckOpen();
+            VerifyCurrentRowNotNull();
 
-            if (_enumerator.Current == null)
-                throw new ArgumentNullException();
-
-            var item = _enumerator.Current[ordinal];
-
-            switch (item.Type)
-            {
-                case JdbcItemType.Null:
-                    return DBNull.Value;
-
-                case JdbcItemType.Binary:
-                    return item.Value;
-
-                default:
-                {
-                    var textValue = Encoding.UTF8.GetString(item.Value);
-
-                    try
-                    {
-                        var fieldType = GetFieldType(ordinal);
-
-                        if (fieldType is null || fieldType == typeof(string))
-                            return textValue;
-
-                        return Convert.ChangeType(textValue, fieldType);
-                    }
-                    catch (InvalidCastException)
-                    {
-                        return textValue;
-                    }
-                }
-            }
+            return _enumerator.Current![ordinal];
         }
 
         public override int GetValues(object[] values)
         {
-            for (var i = 0; i < FieldCount; i++)
-                values[i] = GetValue(i);
+            CheckOpen();
+            VerifyCurrentRowNotNull();
 
-            return values.Length;
+            var copy = Math.Min(values.Length, _enumerator.Current!.Length);
+            _enumerator.Current.AsSpan(0, copy).CopyTo(values);
+
+            return copy;
         }
 
         public override DataTable GetSchemaTable()
@@ -290,6 +263,12 @@ namespace JDBC.NET.Data
             return (_cachedFieldType ??= Response.Columns
                 .Select(x => JdbcTypeConverter.ToType((JdbcDataTypeCode)x.DataTypeCode))
                 .ToArray())[ordinal];
+        }
+
+        private void VerifyCurrentRowNotNull()
+        {
+            if (_enumerator.Current is null)
+                throw new InvalidOperationException();
         }
 
         private void CheckOpen()

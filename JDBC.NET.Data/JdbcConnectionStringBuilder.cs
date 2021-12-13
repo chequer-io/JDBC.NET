@@ -41,7 +41,7 @@ namespace JDBC.NET.Data
         public JdbcConnectionStringBuilder()
         {
             FetchSize = 10;
-            ChunkSize = 2000;
+            ChunkSize = 512 * 1024;
         }
 
         public JdbcConnectionStringBuilder(string connectionString) : this()
