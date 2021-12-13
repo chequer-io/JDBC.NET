@@ -17,11 +17,11 @@ namespace JDBC.NET.Data.Models
 
         #region Constants
         private const string host = "127.0.0.1";
-// #if !DEBUG
-//         private const string jarPath = @"JDBC.NET.Bridge.jar";
-// #else
+#if !DEBUG
+        private const string jarPath = @"JDBC.NET.Bridge.jar";
+#else
         private readonly string jarPath = "JDBC.NET.Bridge-1.0-SNAPSHOT-jar-with-dependencies.jar";
-// #endif
+#endif
         #endregion
 
         #region Properties
