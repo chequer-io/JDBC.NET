@@ -1,33 +1,54 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
-using System.Threading;
+using System.Runtime.ExceptionServices;
 
 namespace JDBC.NET.Data.Utilities
 {
     public static class PortUtility
     {
-        public static void WaitForOpen(int port, int retryCount = 5, int retryInterval = 5000)
+        public static void WaitForOpen(int port, int retryCount = 30, int retryInterval = 500)
         {
-            using var tcpClient = new TcpClient();
-
-            while (retryCount > 0)
+            do
             {
+                var endPoint = new IPEndPoint(IPAddress.Loopback, port);
+                using var socket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+
                 try
                 {
-                    tcpClient.Connect("127.0.0.1", port);
+                    socket.Blocking = false;
+                    socket.Connect(endPoint);
+                    socket.Blocking = true;
+
                     break;
                 }
-                catch (Exception)
+                catch (SocketException e)
                 {
-                    Thread.Sleep(retryInterval);
+                    if (e.SocketErrorCode != SocketError.WouldBlock)
+                    {
+                        socket.Close();
+
+                        if (retryCount <= 0)
+                            ExceptionDispatchInfo.Throw(e);
+
+                        continue;
+                    }
+
+                    var microSeconds = retryInterval * 1000;
+
+                    if (!socket.Poll(microSeconds, SelectMode.SelectWrite))
+                    {
+                        socket.Close();
+
+                        if (retryCount <= 0)
+                            throw new SocketException((int)SocketError.TimedOut);
+
+                        continue;
+                    }
+
+                    socket.Blocking = true;
+                    break;
                 }
-
-                retryCount--;
-            }
-
-            if (retryCount <= 0)
-                throw new TimeoutException();
+            } while (--retryCount > 0);
         }
 
         public static int GetFreeTcpPort()

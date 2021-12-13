@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Grpc.Core;
@@ -86,9 +86,10 @@ namespace JDBC.NET.Data.Models
             javaRunArgs += $" -cp \"{classPaths}\" com.chequer.jdbcnet.bridge.Main -p {port}";
 
             _process = JavaRuntime.Execute(javaRunArgs);
-            PortUtility.WaitForOpen(port);
-
             _channel = new JdbcChannel(host, port, ChannelCredentials.Insecure);
+
+            PortUtility.WaitForOpen(port);
+            _channel.ConnectAsync().Wait();
 
             Driver = new DriverService.DriverServiceClient(_channel);
             Reader = new ReaderService.ReaderServiceClient(_channel);
