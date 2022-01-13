@@ -3,7 +3,6 @@ syntax = "proto3";
 option csharp_namespace = "JDBC.NET.Proto";
 
 import "google/protobuf/empty.proto";
-import "common.proto";
 
 package proto.reader;
 

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
     <Description>It is a wrapper that allows you to use JDBC drivers in ADO.NET</Description>
     <Authors>CHEQUER</Authors>
     <Company>CHEQUER</Company>
@@ -9,15 +9,15 @@
     <RepositoryUrl>https://github.com/chequer-io/JDBC.NET</RepositoryUrl>
     <PackageProjectUrl>https://github.com/chequer-io/JDBC.NET</PackageProjectUrl>
     <PackageIcon>Logo.jpg</PackageIcon>
-    <Version>2.2.0</Version>
+    <Version>3.0.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="J2NET" Version="1.2.0" />
-    <PackageReference Include="Google.Protobuf" Version="3.14.0" />
-    <PackageReference Include="Grpc" Version="2.34.0" />
-    <PackageReference Include="Grpc.Tools" Version="2.34.0">
+    <PackageReference Include="Google.Protobuf" Version="3.19.3" />
+    <PackageReference Include="Grpc" Version="2.43.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.43.0">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
