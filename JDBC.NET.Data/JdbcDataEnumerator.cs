@@ -120,7 +120,9 @@ namespace JDBC.NET.Data
             if (fieldType is null || fieldType == typeof(string))
                 return textValue;
 
-            return Convert.ChangeType(textValue, fieldType);
+            return fieldType != typeof(DateTimeOffset)
+                ? Convert.ChangeType(textValue, fieldType)
+                : DateTimeOffset.Parse(textValue);
         }
 
         public void Reset()
