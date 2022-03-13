@@ -3,7 +3,6 @@ using System.Collections;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
-using System.Text;
 using JDBC.NET.Data.Converters;
 using JDBC.NET.Data.Models;
 using JDBC.NET.Proto;

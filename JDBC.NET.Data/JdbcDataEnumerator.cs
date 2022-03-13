@@ -2,21 +2,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Grpc.Core;
 using JDBC.NET.Data.Converters;
 using JDBC.NET.Data.Models;
-using JDBC.NET.Data.Utilities;
 using JDBC.NET.Proto;
 
 namespace JDBC.NET.Data
 {
-    public class JdbcDataEnumerator : IEnumerator<object[]>
+    internal sealed class JdbcDataEnumerator : IEnumerator<object[]>
     {
         #region Fields
         private ReadResultSetResponse _currentResponse;
-        private IEnumerator<object[]> _currentChunk;
-        private Type[] _fieldTypes;
+        private readonly JdbcDataChunk _chunk;
         #endregion
 
         #region Properties
@@ -36,93 +33,65 @@ namespace JDBC.NET.Data
             if (!string.IsNullOrEmpty(response.ResultSetId))
                 StreamingCall = Connection.Bridge.Reader.readResultSet();
 
-            _fieldTypes = Response.Columns
+            Type[] fieldTypes = Response.Columns
                 .Select(x => JdbcTypeConverter.ToType((JdbcDataTypeCode)x.DataTypeCode))
                 .ToArray();
+
+            _chunk = new JdbcDataChunk(fieldTypes);
         }
         #endregion
 
         #region IEnumerator
-        public object[] Current { get; private set; }
+        public object[] Current => _chunk.Current;
 
-        object IEnumerator.Current => Current;
+        object IEnumerator.Current => _chunk.Current;
 
         public bool MoveNext()
         {
-            if (StreamingCall == null)
-                return false;
-
-            if (_currentChunk == null)
+            while (true)
             {
-                StreamingCall.RequestStream.WriteAsync(new ReadResultSetRequest
-                {
-                    ChunkSize = Connection.ConnectionStringBuilder.ChunkSize,
-                    ResultSetId = Response.ResultSetId
-                }).Wait();
+                if (StreamingCall == null)
+                    return false;
 
-                if (!StreamingCall.ResponseStream.MoveNext().Result)
+                if (_chunk.MoveNext())
+                    return true;
+
+                if (_currentResponse is { IsCompleted: true })
+                    return false;
+
+                if (!MoveNextChunk())
                     return false;
 
                 _currentResponse = StreamingCall.ResponseStream.Current;
-
-                ReadOnlySpan<byte> currentRowsSpan = _currentResponse.Rows.Span;
-                var spanReader = new UnsafeSpanReader(currentRowsSpan);
-                var rows = new List<object[]>(Connection.ConnectionStringBuilder.ChunkSize);
-
-                while (spanReader.Length > spanReader.Position)
-                {
-                    var row = new object[Response.Columns.Count];
-
-                    for (int i = 0; i < row.Length; i++)
-                    {
-                        var type = (JdbcItemType)spanReader.ReadByte();
-
-                        if (type is JdbcItemType.Null)
-                        {
-                            row[i] = DBNull.Value;
-                        }
-                        else
-                        {
-                            var length = spanReader.ReadInt32();
-                            ReadOnlySpan<byte> valueSpan = spanReader.ReadSpan(length);
-
-                            row[i] = ParseValue(i, type, valueSpan);
-                        }
-                    }
-
-                    rows.Add(row);
-                }
-
-                _currentChunk = rows.GetEnumerator();
+                _chunk.Update(_currentResponse.Rows.Memory);
             }
-
-            if (_currentChunk?.MoveNext() == false)
-            {
-                if (_currentResponse.IsCompleted)
-                    return false;
-
-                _currentChunk = null;
-                return MoveNext();
-            }
-
-            Current = _currentChunk?.Current;
-            return true;
         }
 
-        private object ParseValue(int ordinal, JdbcItemType type, ReadOnlySpan<byte> value)
+        private bool MoveNextChunk()
         {
-            if (type is JdbcItemType.Binary)
-                return value.ToArray();
+            try
+            {
+                var request = new ReadResultSetRequest
+                {
+                    ChunkSize = Connection.ConnectionStringBuilder.ChunkSize,
+                    ResultSetId = Response.ResultSetId
+                };
 
-            var textValue = Encoding.UTF8.GetString(value);
-            var fieldType = _fieldTypes[ordinal];
+                StreamingCall.RequestStream.WriteAsync(request).Wait();
+            }
+            catch (AggregateException e) when (e.InnerExceptions.Count == 1)
+            {
+                throw e.InnerExceptions[0];
+            }
 
-            if (fieldType is null || fieldType == typeof(string))
-                return textValue;
-
-            return fieldType != typeof(DateTimeOffset)
-                ? Convert.ChangeType(textValue, fieldType)
-                : DateTimeOffset.Parse(textValue);
+            try
+            {
+                return StreamingCall.ResponseStream.MoveNext().Result;
+            }
+            catch (AggregateException e) when (e.InnerExceptions.Count == 1)
+            {
+                throw e.InnerExceptions[0];
+            }
         }
 
         public void Reset()
@@ -134,7 +103,7 @@ namespace JDBC.NET.Data
         #region IDisposable
         public void Dispose()
         {
-            _currentChunk?.Dispose();
+            _chunk.Update(ReadOnlyMemory<byte>.Empty);
             StreamingCall?.RequestStream.CompleteAsync().Wait();
             StreamingCall?.Dispose();
         }

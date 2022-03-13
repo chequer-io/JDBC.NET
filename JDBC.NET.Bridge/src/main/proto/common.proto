@@ -7,8 +7,21 @@ package proto;
 enum JdbcItemType {
   NULL = 0;
   TEXT = 1;
-  BINARY = 2;
-  UNKNOWN = 3;
+  BYTE = 2;
+  SHORT = 3;
+  INTEGER = 4;
+  LONG = 5;
+  FLOAT = 6;
+  DOUBLE = 7;
+  CHAR = 8;
+  BOOLEAN = 9;
+  BIG_INTEGER = 10;
+  BIG_DECIMAL = 11;
+  DATE = 12;
+  TIME = 13;
+  DATE_TIME = 14;
+  BINARY = 15;
+  UNKNOWN = 16;
 }
 
 message JdbcResultSetResponse {

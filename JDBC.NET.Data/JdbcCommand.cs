@@ -118,20 +118,13 @@ namespace JDBC.NET.Data
 
         public override int ExecuteNonQuery()
         {
-            Task<int> task = ExecuteNonQueryAsync();
-
             try
             {
-                return task.Result;
+                return ExecuteNonQueryAsync().Result;
             }
-            catch (AggregateException e)
+            catch (AggregateException e) when (e.InnerExceptions.Count == 1)
             {
-                var innerException = e.Flatten().InnerException;
-
-                if (innerException != null)
-                    throw innerException;
-
-                throw;
+                throw e.InnerExceptions[0];
             }
         }
 
@@ -151,20 +144,13 @@ namespace JDBC.NET.Data
 
         public override object ExecuteScalar()
         {
-            Task<object> task = ExecuteScalarAsync(CancellationToken.None);
-
             try
             {
-                return task.Result;
+                return ExecuteScalarAsync(CancellationToken.None).Result;
             }
-            catch (AggregateException e)
+            catch (AggregateException e) when (e.InnerExceptions.Count == 1)
             {
-                var innerException = e.Flatten().InnerException;
-
-                if (innerException != null)
-                    throw innerException;
-
-                throw;
+                throw e.InnerExceptions[0];
             }
         }
 
@@ -193,17 +179,11 @@ namespace JDBC.NET.Data
         {
             try
             {
-                Task<DbDataReader> task = ExecuteDbDataReaderAsync(behavior, CancellationToken.None);
-                return task.Result;
+                return ExecuteDbDataReaderAsync(behavior, CancellationToken.None).Result;
             }
-            catch (AggregateException e)
+            catch (AggregateException e) when (e.InnerExceptions.Count == 1)
             {
-                var innerException = e.Flatten().InnerException;
-
-                if (innerException != null)
-                    throw innerException;
-
-                throw;
+                throw e.InnerExceptions[0];
             }
         }
 
