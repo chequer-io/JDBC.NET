@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Grpc.Core;
 using J2NET;
 using JDBC.NET.Data.Utilities;
@@ -71,9 +72,9 @@ namespace JDBC.NET.Data.Models
         #region Private Methods
         private void Initialize()
         {
-            var port = PortUtility.GetFreeTcpPort();
+            var bridgeCTS = new CancellationTokenSource();
+            using var bridgePort = JdbcBridgePortService.Create(bridgeCTS.Token);
 
-            // TODO : Need to move Execute logic to J2NET
             var classPaths = string.Join(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":", jarPath, DriverPath);
             var javaRunArgs = $"-XX:G1PeriodicGCInterval=5000";
 
@@ -83,27 +84,45 @@ namespace JDBC.NET.Data.Models
             if (ConnectionProperties.TryGetValue("JAAS_CONFIG", out var jaasConfig))
                 javaRunArgs += $" -Djava.security.auth.login.config={jaasConfig}";
 
-            javaRunArgs += $" -cp \"{classPaths}\" com.chequer.jdbcnet.bridge.Main -p {port}";
+            javaRunArgs += $" -cp \"{classPaths}\" com.chequer.jdbcnet.bridge.Main -i {bridgePort.Id} -p {bridgePort.ServerPort}";
 
-            _process = JavaRuntime.Execute(javaRunArgs);
-            _channel = new JdbcChannel(host, port, ChannelCredentials.Insecure);
+            var process = JavaRuntime.Execute(javaRunArgs);
+            process.EnableRaisingEvents = true;
+            process.Exited += delegate { bridgeCTS.Cancel(); };
 
-            PortUtility.WaitForOpen(port);
-            _channel.ConnectAsync().Wait();
+            if (process.HasExited)
+                bridgeCTS.Cancel();
 
-            Driver = new DriverService.DriverServiceClient(_channel);
-            Reader = new ReaderService.ReaderServiceClient(_channel);
-            Statement = new StatementService.StatementServiceClient(_channel);
-            Database = new DatabaseService.DatabaseServiceClient(_channel);
-            MetaData = new MetaDataService.MetaDataServiceClient(_channel);
-
-            var loadDriverResponse = Driver.loadDriver(new LoadDriverRequest
+            try
             {
-                ClassName = DriverClass
-            });
+                var port = bridgePort.GetPort();
 
-            DriverMajorVersion = loadDriverResponse.MajorVersion;
-            DriverMinorVersion = loadDriverResponse.MinorVersion;
+                var channel = new JdbcChannel(host, port, ChannelCredentials.Insecure);
+                channel.ConnectAsync().Wait(CancellationToken.None);
+
+                Driver = new DriverService.DriverServiceClient(channel);
+                Reader = new ReaderService.ReaderServiceClient(channel);
+                Statement = new StatementService.StatementServiceClient(channel);
+                Database = new DatabaseService.DatabaseServiceClient(channel);
+                MetaData = new MetaDataService.MetaDataServiceClient(channel);
+
+                var loadDriverResponse = Driver.loadDriver(new LoadDriverRequest
+                {
+                    ClassName = DriverClass
+                });
+
+                DriverMajorVersion = loadDriverResponse.MajorVersion;
+                DriverMinorVersion = loadDriverResponse.MinorVersion;
+
+                _process = process;
+                _channel = channel;
+            }
+            catch
+            {
+                process.Kill();
+                process.Dispose();
+                throw;
+            }
         }
         #endregion
 
