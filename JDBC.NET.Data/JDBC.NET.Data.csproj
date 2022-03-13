@@ -9,7 +9,7 @@
     <RepositoryUrl>https://github.com/chequer-io/JDBC.NET</RepositoryUrl>
     <PackageProjectUrl>https://github.com/chequer-io/JDBC.NET</PackageProjectUrl>
     <PackageIcon>Logo.jpg</PackageIcon>
-    <Version>3.1.0</Version>
+    <Version>3.2.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
