@@ -89,7 +89,7 @@ internal partial class JdbcDataChunk
 
     private static object DecodeDouble(Type fieldType, in ReadOnlySpan<byte> data, ref int position)
     {
-        var value = BinaryPrimitives.ReadDoubleBigEndian(data.Slice(position, 8));
+        var value = BinaryPrimitives.ReadDoubleLittleEndian(data.Slice(position, 8));
         position += 8;
         return value;
     }
