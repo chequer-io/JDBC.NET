@@ -11,15 +11,37 @@ import proto.statement.Statement;
 import proto.statement.StatementServiceGrpc;
 
 import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Time;
 
 public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceImplBase {
+
+    @Override
+    public void prepareStatement(Statement.PrepareStatementRequest request, StreamObserver<Statement.PrepareStatementResponse> responseObserver) {
+        try {
+            var connection = ObjectManager.getConnection(request.getConnectionId());
+            var statement = connection.prepareStatement(request.getSql(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            var statementId = ObjectManager.putStatement(statement);
+
+            var response = Statement.PrepareStatementResponse.newBuilder()
+                    .setStatementId(statementId)
+                    .build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Throwable e) {
+            responseObserver.onError(Status.INTERNAL
+                    .withDescription(e.getMessage())
+                    .asRuntimeException());
+        }
+    }
+
     @Override
     public void createStatement(Statement.CreateStatementRequest request, StreamObserver<Statement.CreateStatementResponse> responseObserver) {
         try {
             var connection = ObjectManager.getConnection(request.getConnectionId());
-            var statement = connection.prepareStatement(request.getSql(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            var statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             var statementId = ObjectManager.putStatement(statement);
 
             var response = Statement.CreateStatementResponse.newBuilder()
@@ -41,7 +63,16 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
             var statement = ObjectManager.getStatement(request.getStatementId());
             statement.setFetchSize(request.getFetchSize() == -1 ? statement.getMaxRows() : request.getFetchSize());
 
-            if (!statement.execute()) {
+            boolean result;
+            if (statement instanceof PreparedStatement) {
+                var preparedStatement = (PreparedStatement)statement;
+                result = preparedStatement.execute();
+            }
+            else {
+                result = statement.execute(request.getSql());
+            }
+
+            if (!result) {
                 var responseBuilder = Common.JdbcResultSetResponse.newBuilder()
                         .setRecordsAffected(statement.getUpdateCount());
 
@@ -110,44 +141,49 @@ public class StatementServiceImpl extends StatementServiceGrpc.StatementServiceI
         try {
             var statement = ObjectManager.getStatement(request.getStatementId());
 
+            if (!(statement instanceof PreparedStatement))
+                throw new Exception("Must be prepared");
+
+            var preparedStatement = (PreparedStatement)statement;
+
             var index = request.getIndex();
             var value = request.getValue();
 
             switch (request.getType()) {
                 case INT:
-                    statement.setInt(index, Integer.parseInt(value));
+                    preparedStatement.setInt(index, Integer.parseInt(value));
                     break;
 
                 case LONG:
-                    statement.setLong(index, Long.parseLong(value));
+                    preparedStatement.setLong(index, Long.parseLong(value));
                     break;
 
                 case SHORT:
-                    statement.setShort(index, Short.parseShort(value));
+                    preparedStatement.setShort(index, Short.parseShort(value));
                     break;
 
                 case FLOAT:
-                    statement.setFloat(index, Float.parseFloat(value));
+                    preparedStatement.setFloat(index, Float.parseFloat(value));
                     break;
 
                 case DOUBLE:
-                    statement.setDouble(index, Double.parseDouble(value));
+                    preparedStatement.setDouble(index, Double.parseDouble(value));
                     break;
 
                 case STRING:
-                    statement.setString(index, value);
+                    preparedStatement.setString(index, value);
                     break;
 
                 case BOOLEAN:
-                    statement.setBoolean(index, Boolean.parseBoolean(value));
+                    preparedStatement.setBoolean(index, Boolean.parseBoolean(value));
                     break;
 
                 case TIME:
-                    statement.setTime(index, Time.valueOf(value));
+                    preparedStatement.setTime(index, Time.valueOf(value));
                     break;
 
                 case DATE:
-                    statement.setDate(index, Date.valueOf(value));
+                    preparedStatement.setDate(index, Date.valueOf(value));
                     break;
             }
 

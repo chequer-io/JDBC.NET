@@ -66,7 +66,9 @@ namespace JDBC.NET.Data
             set => throw new NotSupportedException();
         }
 
-        private bool IsPrepared => StatementId != null;
+        private bool IsPrepared { get; set; }
+
+        private bool IsStatementCreated => StatementId is not null;
 
         private string StatementId { get; set; }
         #endregion
@@ -82,38 +84,7 @@ namespace JDBC.NET.Data
         #region Public Methods
         public override void Prepare()
         {
-            if (IsPrepared)
-                return;
-
-            if (Connection is not JdbcConnection jdbcConnection)
-                throw new InvalidOperationException();
-
-            if (Parameters.Count <= 0)
-            {
-                CreateStatement(CommandText);
-            }
-            else
-            {
-                List<JdbcParameter> orderedParameters = Parameters
-                    .OfType<JdbcParameter>()
-                    .OrderBy(x => CommandText.IndexOf(x.ParameterName, StringComparison.Ordinal))
-                    .ToList();
-
-                CreateStatement(orderedParameters.Aggregate(CommandText, (x, parameter) => x.Replace(parameter.ParameterName, "?")));
-
-                for (var i = 0; i < orderedParameters.Count; i++)
-                {
-                    var parameter = orderedParameters[i];
-
-                    jdbcConnection.Bridge.Statement.setParameter(new SetParameterRequest
-                    {
-                        StatementId = StatementId,
-                        Index = i + 1,
-                        Value = parameter.Value.ToString(),
-                        Type = ParameterTypeUtility.Convert(parameter.DbType)
-                    });
-                }
-            }
+            IsPrepared = true;
         }
 
         public override int ExecuteNonQuery()
@@ -195,16 +166,14 @@ namespace JDBC.NET.Data
             if (_dataReader?.IsClosed == false)
                 throw new InvalidOperationException("The previously executed DataReader has not been closed yet.");
 
-            if (IsPrepared)
-                CloseStatement();
-
-            await PrepareAsync(cancellationToken);
+            CreateStatement();
 
             var response = await jdbcConnection.Bridge.Statement.executeStatementAsync(
                 new ExecuteStatementRequest
                 {
                     StatementId = StatementId,
-                    FetchSize = FetchSize
+                    FetchSize = FetchSize,
+                    Sql = IsPrepared ? string.Empty : CommandText
                 },
                 cancellationToken: cancellationToken
             );
@@ -233,15 +202,67 @@ namespace JDBC.NET.Data
         #endregion
 
         #region Private Methods
-        private void CreateStatement(string sql)
+        private void CreateStatement()
+        {
+            if (IsPrepared)
+            {
+                CreatePreparedStatement();
+                return;
+            }
+
+            if (Parameters.Count > 0)
+            {
+                CreatePreparedStatement();
+                return;
+            }
+            
+            CreateRawStatement();
+        }
+        
+        private void CreatePreparedStatement()
         {
             if (Connection is not JdbcConnection jdbcConnection)
                 throw new InvalidOperationException();
+            
+            CloseStatement();
+            
+            List<JdbcParameter> orderedParameters = Parameters
+                .OfType<JdbcParameter>()
+                .OrderBy(x => CommandText.IndexOf(x.ParameterName, StringComparison.Ordinal))
+                .ToList();
+
+            var response = jdbcConnection.Bridge.Statement.prepareStatement(new PrepareStatementRequest
+            {
+                ConnectionId = jdbcConnection.ConnectionId,
+                Sql = orderedParameters.Aggregate(CommandText, (x, parameter) => x.Replace(parameter.ParameterName, "?"))
+            });
+
+            StatementId = response.StatementId;
+
+            for (var i = 0; i < orderedParameters.Count; i++)
+            {
+                var parameter = orderedParameters[i];
+
+                jdbcConnection.Bridge.Statement.setParameter(new SetParameterRequest
+                {
+                    StatementId = StatementId,
+                    Index = i + 1,
+                    Value = parameter.Value.ToString(),
+                    Type = ParameterTypeUtility.Convert(parameter.DbType)
+                });
+            }
+        }
+
+        private void CreateRawStatement()
+        {
+            if (Connection is not JdbcConnection jdbcConnection)
+                throw new InvalidOperationException();
+            
+            CloseStatement();
 
             var response = jdbcConnection.Bridge.Statement.createStatement(new CreateStatementRequest
             {
                 ConnectionId = jdbcConnection.ConnectionId,
-                Sql = sql
             });
 
             StatementId = response.StatementId;
@@ -249,7 +270,7 @@ namespace JDBC.NET.Data
 
         private void CloseStatement()
         {
-            if (!IsPrepared)
+            if (!IsStatementCreated)
                 return;
 
             if (Connection is not JdbcConnection jdbcConnection)
