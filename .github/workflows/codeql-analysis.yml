@@ -67,6 +67,13 @@ jobs:
       run: |
         cd JDBC.NET.Bridge
         mvn package
+        cd ..
+
+    - name: Build .NET
+      run: |
+        cd JDBC.NET.Data
+        dotnet build --configuration Release
+        cd ..
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
