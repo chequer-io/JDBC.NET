@@ -291,7 +291,12 @@ namespace JDBC.NET.Data
             if (_isDisposed)
                 return;
 
-            CloseStatement();
+            var dbConnection = this.Connection;
+            if (dbConnection is not null)
+            {
+                if (dbConnection.State is ConnectionState.Open or ConnectionState.Executing or ConnectionState.Fetching)
+                    CloseStatement();
+            }
             _isDisposed = true;
 
             base.Dispose(disposing);
