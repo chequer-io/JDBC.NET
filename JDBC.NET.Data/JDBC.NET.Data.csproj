@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <LangVersion>10</LangVersion>
     <Description>It is a wrapper that allows you to use JDBC drivers in ADO.NET</Description>
     <Authors>CHEQUER</Authors>
