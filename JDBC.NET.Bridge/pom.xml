@@ -46,6 +46,12 @@
             <version>6.0.53</version>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.21.7</version>
+        </dependency>
     </dependencies>
 
     <build>
