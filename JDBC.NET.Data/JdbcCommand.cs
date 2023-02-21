@@ -276,10 +276,13 @@ namespace JDBC.NET.Data
             if (Connection is not JdbcConnection jdbcConnection)
                 throw new InvalidOperationException();
 
-            jdbcConnection.Bridge.Statement.closeStatement(new CloseStatementRequest
+            if (Connection.State != ConnectionState.Closed)
             {
-                StatementId = StatementId
-            });
+                jdbcConnection.Bridge.Statement.closeStatement(new CloseStatementRequest
+                {
+                    StatementId = StatementId
+                });
+            }
 
             StatementId = null;
         }
@@ -290,7 +293,7 @@ namespace JDBC.NET.Data
         {
             if (_isDisposed)
                 return;
-
+            
             CloseStatement();
             _isDisposed = true;
 
