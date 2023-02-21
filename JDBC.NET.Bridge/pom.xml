@@ -19,19 +19,19 @@
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-netty-shaded</artifactId>
-            <version>1.46.0</version>
+            <version>1.53.0</version>
         </dependency>
 
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-protobuf</artifactId>
-            <version>1.46.0</version>
+            <version>1.53.0</version>
         </dependency>
 
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-stub</artifactId>
-            <version>1.46.0</version>
+            <version>1.53.0</version>
         </dependency>
 
         <dependency>
@@ -50,7 +50,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>3.21.7</version>
+            <version>3.22.0</version>
         </dependency>
     </dependencies>
 

@@ -276,7 +276,7 @@ namespace JDBC.NET.Data
             if (Connection is not JdbcConnection jdbcConnection)
                 throw new InvalidOperationException();
 
-            if (Connection.State != ConnectionState.Closed)
+            if (Connection.State is not ConnectionState.Closed)
             {
                 jdbcConnection.Bridge.Statement.closeStatement(new CloseStatementRequest
                 {
