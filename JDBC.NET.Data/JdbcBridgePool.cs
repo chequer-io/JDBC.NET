@@ -13,15 +13,15 @@ namespace JDBC.NET.Data
 
         #region Public Methods
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public static JdbcBridge Lease(string driverPath, string driverClass, JdbcConnectionProperties connectionProperties)
+        public static JdbcBridge Lease(JdbcBridgeOptions options)
         {
-            var key = JdbcBridgePoolKey.Create(driverPath, driverClass, connectionProperties);
+            var key = JdbcBridgePoolKey.Create(options);
 
             if (!_bridges.TryGetValue(key, out var reference))
             {
                 reference = new JdbcBridgeReference
                 {
-                    Bridge = JdbcBridge.FromDriver(driverPath, driverClass, connectionProperties)
+                    Bridge = JdbcBridge.FromDriver(options)
                 };
 
                 _bridges[key] = reference;

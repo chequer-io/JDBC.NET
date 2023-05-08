@@ -35,6 +35,12 @@ namespace JDBC.NET.Data
             get => GetValue<string>(nameof(JdbcUrl));
             set => SetValue(nameof(JdbcUrl), value);
         }
+
+        public string LibraryJarFiles
+        {
+            get => GetValue<string>(nameof(LibraryJarFiles));
+            set => SetValue(nameof(LibraryJarFiles), value);
+        }
         #endregion
 
         #region Constructor

@@ -1,10 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Grpc.Core;
 using J2NET;
-using JDBC.NET.Data.Utilities;
 using JDBC.NET.Proto;
 
 namespace JDBC.NET.Data.Models
@@ -21,7 +22,7 @@ namespace JDBC.NET.Data.Models
 #if !DEBUG
         private const string jarPath = @"JDBC.NET.Bridge.jar";
 #else
-        private readonly string jarPath = "JDBC.NET.Bridge-1.0-SNAPSHOT-jar-with-dependencies.jar";
+        private const string jarPath = "JDBC.NET.Bridge-1.0-SNAPSHOT-jar-with-dependencies.jar";
 #endif
         #endregion
 
@@ -38,31 +39,25 @@ namespace JDBC.NET.Data.Models
 
         internal JdbcBridgePoolKey Key { get; }
 
-        public string DriverPath { get; }
-
-        public string DriverClass { get; }
-
         public int DriverMajorVersion { get; private set; }
 
         public int DriverMinorVersion { get; private set; }
 
-        public JdbcConnectionProperties ConnectionProperties { get; }
+        public JdbcBridgeOptions Options { get; set; }
         #endregion
 
         #region Constructor
-        private JdbcBridge(string driverPath, string driverClass, JdbcConnectionProperties connectionProperties)
+        private JdbcBridge(JdbcBridgeOptions options)
         {
-            DriverPath = driverPath;
-            DriverClass = driverClass;
-            ConnectionProperties = connectionProperties;
-            Key = JdbcBridgePoolKey.Create(driverPath, driverClass, connectionProperties);
+            Options = options;
+            Key = JdbcBridgePoolKey.Create(options);
         }
         #endregion
 
         #region Public Methods
-        internal static JdbcBridge FromDriver(string driverPath, string driverClass, JdbcConnectionProperties connectionProperties)
+        internal static JdbcBridge FromDriver(JdbcBridgeOptions options)
         {
-            var bridge = new JdbcBridge(driverPath, driverClass, connectionProperties);
+            var bridge = new JdbcBridge(options);
             bridge.Initialize();
 
             return bridge;
@@ -75,13 +70,13 @@ namespace JDBC.NET.Data.Models
             var bridgeCTS = new CancellationTokenSource();
             using var bridgePort = JdbcBridgePortService.Create(bridgeCTS.Token);
 
-            var classPaths = string.Join(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":", jarPath, DriverPath);
+            var classPaths = string.Join(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":", ResolveJarFiles());
             var javaRunArgs = $"-XX:G1PeriodicGCInterval=5000";
 
-            if (ConnectionProperties.TryGetValue("KRB5_CONFIG", out var krb5Config))
+            if (Options.ConnectionProperties.TryGetValue("KRB5_CONFIG", out var krb5Config))
                 javaRunArgs += $" -Djava.security.krb5.conf={krb5Config}";
 
-            if (ConnectionProperties.TryGetValue("JAAS_CONFIG", out var jaasConfig))
+            if (Options.ConnectionProperties.TryGetValue("JAAS_CONFIG", out var jaasConfig))
                 javaRunArgs += $" -Djava.security.auth.login.config={jaasConfig}";
 
             javaRunArgs += $" -cp \"{classPaths}\" com.chequer.jdbcnet.bridge.Main -i {bridgePort.Id} -p {bridgePort.ServerPort}";
@@ -106,10 +101,12 @@ namespace JDBC.NET.Data.Models
                 Database = new DatabaseService.DatabaseServiceClient(channel);
                 MetaData = new MetaDataService.MetaDataServiceClient(channel);
 
-                var loadDriverResponse = Driver.loadDriver(new LoadDriverRequest
-                {
-                    ClassName = DriverClass
-                });
+                var loadDriverResponse = Driver.loadDriver(
+                    new LoadDriverRequest
+                    {
+                        ClassName = Options.DriverClass
+                    }
+                );
 
                 DriverMajorVersion = loadDriverResponse.MajorVersion;
                 DriverMinorVersion = loadDriverResponse.MinorVersion;
@@ -123,6 +120,17 @@ namespace JDBC.NET.Data.Models
                 process.Dispose();
                 throw;
             }
+        }
+
+        private IEnumerable<string> ResolveJarFiles()
+        {
+            var defaultJarFiles = new[] { jarPath, Options.DriverPath };
+
+            if (string.IsNullOrEmpty(Options.LibraryJarFiles))
+                return defaultJarFiles;
+
+            IEnumerable<string> libraryJarFiles = Options.LibraryJarFiles.Split(',').Select(path => path.Trim());
+            return defaultJarFiles.Concat(libraryJarFiles);
         }
         #endregion
 
