@@ -121,16 +121,28 @@ namespace JDBC.NET.Data
             {
                 _state = ConnectionState.Connecting;
 
-                Bridge = JdbcBridgePool.Lease(ConnectionStringBuilder.DriverPath, ConnectionStringBuilder.DriverClass, ConnectionProperties);
-
-                var response = await Bridge.Database.openConnectionAsync(new OpenConnectionRequest
+                var bridgeOptions = new JdbcBridgeOptions(
+                    ConnectionStringBuilder.DriverPath,
+                    ConnectionStringBuilder.DriverClass
+                )
                 {
-                    JdbcUrl = ConnectionStringBuilder.JdbcUrl,
-                    Properties =
+                    LibraryJarFiles = ConnectionStringBuilder.LibraryJarFiles,
+                    ConnectionProperties = ConnectionProperties
+                };
+
+                Bridge = JdbcBridgePool.Lease(bridgeOptions);
+
+                var response = await Bridge.Database.openConnectionAsync(
+                    new OpenConnectionRequest
                     {
-                        ConnectionProperties
-                    }
-                }, cancellationToken: cancellationToken);
+                        JdbcUrl = ConnectionStringBuilder.JdbcUrl,
+                        Properties =
+                        {
+                            ConnectionProperties
+                        }
+                    },
+                    cancellationToken: cancellationToken
+                );
 
                 ConnectionId = response.ConnectionId;
                 _serverVersion = response.DatabaseProductVersion;
@@ -170,10 +182,12 @@ namespace JDBC.NET.Data
             {
                 if (_state != ConnectionState.Closed && Bridge != null && ConnectionId != null)
                 {
-                    await Bridge.Database.closeConnectionAsync(new CloseConnectionRequest
-                    {
-                        ConnectionId = ConnectionId
-                    });
+                    await Bridge.Database.closeConnectionAsync(
+                        new CloseConnectionRequest
+                        {
+                            ConnectionId = ConnectionId
+                        }
+                    );
 
                     JdbcBridgePool.Release(Bridge.Key);
                 }
@@ -213,16 +227,21 @@ namespace JDBC.NET.Data
             if (CurrentTransaction?.IsDisposeed == false)
                 throw new InvalidOperationException("A transaction is already in progress. Nested transactions are not supported.");
 
-            Bridge.Database.setAutoCommit(new SetAutoCommitRequest
-            {
-                ConnectionId = ConnectionId,
-                UseAutoCommit = false
-            });
+            Bridge.Database.setAutoCommit(
+                new SetAutoCommitRequest
+                {
+                    ConnectionId = ConnectionId,
+                    UseAutoCommit = false
+                }
+            );
 
-            var originalLevel = Bridge.Database.getTransactionIsolation(new GetTransactionIsolationRequest
-            {
-                ConnectionId = ConnectionId
-            }).Isolation;
+            var originalLevel = Bridge.Database.getTransactionIsolation(
+                    new GetTransactionIsolationRequest
+                    {
+                        ConnectionId = ConnectionId
+                    }
+                )
+                .Isolation;
 
             if (isolationLevel == IsolationLevel.Unspecified)
             {
@@ -238,11 +257,13 @@ namespace JDBC.NET.Data
             }
             else if (IsolationLevelConverter.Convert(isolationLevel) != originalLevel)
             {
-                Bridge.Database.setTransactionIsolation(new SetTransactionIsolationRequest
-                {
-                    ConnectionId = ConnectionId,
-                    Isolation = IsolationLevelConverter.Convert(isolationLevel)
-                });
+                Bridge.Database.setTransactionIsolation(
+                    new SetTransactionIsolationRequest
+                    {
+                        ConnectionId = ConnectionId,
+                        Isolation = IsolationLevelConverter.Convert(isolationLevel)
+                    }
+                );
             }
 
             CurrentTransaction = new JdbcTransaction(this, isolationLevel, originalLevel);
@@ -254,11 +275,13 @@ namespace JDBC.NET.Data
         {
             CheckOpen();
 
-            Bridge.Database.changeCatalog(new ChangeCatalogRequest
-            {
-                ConnectionId = ConnectionId,
-                CatalogName = databaseName
-            });
+            Bridge.Database.changeCatalog(
+                new ChangeCatalogRequest
+                {
+                    ConnectionId = ConnectionId,
+                    CatalogName = databaseName
+                }
+            );
 
             _database = databaseName;
         }

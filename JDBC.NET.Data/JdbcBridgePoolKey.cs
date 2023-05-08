@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Immutable;
+using JDBC.NET.Data.Models;
 
 namespace JDBC.NET.Data
 {
@@ -9,12 +10,15 @@ namespace JDBC.NET.Data
 
         public string DriverClass { get; }
 
+        public string LibraryJarFiles { get; }
+
         public ImmutableDictionary<string, string> ConnectionProperties { get; }
 
-        private JdbcBridgePoolKey(string driverPath, string driverClass, ImmutableDictionary<string, string> connectionProperties)
+        private JdbcBridgePoolKey(string driverPath, string driverClass, string libraryJarFiles, ImmutableDictionary<string, string> connectionProperties)
         {
             DriverPath = driverPath;
             DriverClass = driverClass;
+            LibraryJarFiles = libraryJarFiles;
             ConnectionProperties = connectionProperties;
         }
 
@@ -26,7 +30,7 @@ namespace JDBC.NET.Data
             if (ReferenceEquals(this, other))
                 return true;
 
-            if (DriverPath != other.DriverPath || DriverClass != other.DriverClass)
+            if (DriverPath != other.DriverPath || DriverClass != other.DriverClass || LibraryJarFiles != other.LibraryJarFiles)
                 return false;
 
             if (ReferenceEquals(ConnectionProperties, other.ConnectionProperties))
@@ -80,9 +84,9 @@ namespace JDBC.NET.Data
             return hasCode.ToHashCode();
         }
 
-        public static JdbcBridgePoolKey Create(string driverPath, string driverClass, JdbcConnectionProperties connectionProperties)
+        public static JdbcBridgePoolKey Create(JdbcBridgeOptions options)
         {
-            return new JdbcBridgePoolKey(driverPath, driverClass, connectionProperties?.ToImmutableDictionary());
+            return new JdbcBridgePoolKey(options.DriverPath, options.DriverClass, options.LibraryJarFiles, options.ConnectionProperties?.ToImmutableDictionary());
         }
     }
 }
