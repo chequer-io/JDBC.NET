@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Common;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace JDBC.NET.Data
@@ -40,8 +41,8 @@ namespace JDBC.NET.Data
 
         public string[] LibraryJarFiles
         {
-            get => DeserializeLibraryJarFiles(GetValue<string>(nameof(LibraryJarFiles)));
-            set => SetValue(nameof(LibraryJarFiles), SerializeLibraryJarFiles(value));
+            get => JsonSerializer.Deserialize<string[]>(GetValue<string>(nameof(LibraryJarFiles)));
+            set => SetValue(nameof(LibraryJarFiles), JsonSerializer.Serialize(value));
         }
         #endregion
 
@@ -73,34 +74,6 @@ namespace JDBC.NET.Data
                 this[key] = value;
             else
                 Remove(key);
-        }
-
-        private static string[] DeserializeLibraryJarFiles(string json)
-        {
-            var node = JsonNode.Parse(json);
-
-            if (node is null)
-                return Array.Empty<string>();
-
-            var array = node.AsArray();
-
-            return array
-                .Select(file => file?.GetValue<string>() ?? string.Empty)
-                .Where(file => file.Length != 0)
-                .ToArray();
-        }
-
-        private static string SerializeLibraryJarFiles(string[] files)
-        {
-            if (files == null)
-                throw new ArgumentNullException(nameof(files));
-
-            JsonNode[] x = files
-                .Select<string, JsonNode>(file => JsonValue.Create(file))
-                .ToArray();
-
-            var array = new JsonArray(x);
-            return array.ToJsonString();
         }
         #endregion
     }
