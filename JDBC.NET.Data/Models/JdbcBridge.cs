@@ -126,10 +126,7 @@ namespace JDBC.NET.Data.Models
         {
             var defaultJarFiles = new[] { jarPath, Options.DriverPath };
 
-            if (string.IsNullOrEmpty(Options.LibraryJarFiles))
-                return defaultJarFiles;
-
-            IEnumerable<string> libraryJarFiles = Options.LibraryJarFiles.Split(',').Select(path => path.Trim());
+            IEnumerable<string> libraryJarFiles = Options.LibraryJarFiles ?? Enumerable.Empty<string>();
             return defaultJarFiles.Concat(libraryJarFiles);
         }
         #endregion

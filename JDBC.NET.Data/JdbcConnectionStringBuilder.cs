@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Data.Common;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace JDBC.NET.Data
 {
@@ -36,10 +39,10 @@ namespace JDBC.NET.Data
             set => SetValue(nameof(JdbcUrl), value);
         }
 
-        public string LibraryJarFiles
+        public string[] LibraryJarFiles
         {
-            get => GetValue<string>(nameof(LibraryJarFiles));
-            set => SetValue(nameof(LibraryJarFiles), value);
+            get => JsonSerializer.Deserialize<string[]>(GetValue<string>(nameof(LibraryJarFiles)));
+            set => SetValue(nameof(LibraryJarFiles), JsonSerializer.Serialize(value));
         }
         #endregion
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Immutable;
+using System.Linq;
 using JDBC.NET.Data.Models;
 
 namespace JDBC.NET.Data
@@ -10,11 +11,11 @@ namespace JDBC.NET.Data
 
         public string DriverClass { get; }
 
-        public string LibraryJarFiles { get; }
+        public string[] LibraryJarFiles { get; }
 
         public ImmutableDictionary<string, string> ConnectionProperties { get; }
 
-        private JdbcBridgePoolKey(string driverPath, string driverClass, string libraryJarFiles, ImmutableDictionary<string, string> connectionProperties)
+        private JdbcBridgePoolKey(string driverPath, string driverClass, string[] libraryJarFiles, ImmutableDictionary<string, string> connectionProperties)
         {
             DriverPath = driverPath;
             DriverClass = driverClass;
@@ -30,7 +31,7 @@ namespace JDBC.NET.Data
             if (ReferenceEquals(this, other))
                 return true;
 
-            if (DriverPath != other.DriverPath || DriverClass != other.DriverClass || LibraryJarFiles != other.LibraryJarFiles)
+            if (DriverPath != other.DriverPath || DriverClass != other.DriverClass || !LibraryJarFiles.SequenceEqual(other.LibraryJarFiles))
                 return false;
 
             if (ReferenceEquals(ConnectionProperties, other.ConnectionProperties))
