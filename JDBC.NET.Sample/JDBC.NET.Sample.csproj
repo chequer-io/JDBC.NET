@@ -14,7 +14,7 @@
       <OSPlatform Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">OSX</OSPlatform>
       <OSPlatform Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">Linux</OSPlatform>
       <OSPlatform Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true'">Windows</OSPlatform>
-      <OSArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)</OSArchitecture>
+      <OSArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)</OSArchitecture>
   </PropertyGroup>
 
   <ItemGroup Label="Development" Condition=" '$(RID)' == '' And '$(Packaging)' == '' ">
@@ -24,4 +24,11 @@
       <PackageReference Condition=" '$(OSPlatform)' == 'Windows' And '$(OSArchitecture)' == 'X64' " Include="J2NET.Runtime.Win64" Version="$(RuntimeVersion)" />
       <PackageReference Condition=" '$(OSPlatform)' == 'Windows' And '$(OSArchitecture)' == 'X86' " Include="J2NET.Runtime.Win32" Version="$(RuntimeVersion)" />
   </ItemGroup>
+
+    <Target Name="Packages" BeforeTargets="CollectPackageReferences">
+        <Message Text="OSPlatform: $(OSPlatform)" Importance="high"/>
+        <Message Text="OSArchitecture: $(OSArchitecture)" Importance="high"/>
+        <Warning Text="$(WarningMessage)" Condition=" $(WarningMessage) != '' " />
+        <Error Text="$(ErrorMessage)" Condition=" $(ErrorMessage) != '' " />
+    </Target>
 </Project>
