@@ -41,8 +41,25 @@ namespace JDBC.NET.Data
 
         public string[] LibraryJarFiles
         {
-            get => JsonSerializer.Deserialize<string[]>(GetValue<string>(nameof(LibraryJarFiles)));
-            set => SetValue(nameof(LibraryJarFiles), JsonSerializer.Serialize(value));
+            get
+            {
+                var value = GetValue<string>(nameof(LibraryJarFiles));
+
+                if (string.IsNullOrEmpty(value))
+                    return Array.Empty<string>();
+
+                return JsonSerializer.Deserialize<string[]>(value);
+            }
+            set
+            {
+                if (value is null)
+                {
+                    SetValue(nameof(LibraryJarFiles), (string)null);
+                    return;
+                }
+
+                SetValue(nameof(LibraryJarFiles), JsonSerializer.Serialize(value));
+            }
         }
         #endregion
 
