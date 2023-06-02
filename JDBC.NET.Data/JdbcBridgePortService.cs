@@ -25,7 +25,12 @@ namespace JDBC.NET.Data
 
                 _server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 _server.Bind(new IPEndPoint(IPAddress.Any, 0));
+
+#if NET6_0_OR_GREATER
                 _server.Listen();
+#else
+                _server.Listen(int.MaxValue);
+#endif
 
                 _server.BeginAccept(Accept, null);
             }

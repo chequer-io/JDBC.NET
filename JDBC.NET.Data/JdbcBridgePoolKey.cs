@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Immutable;
+using System.Collections.Generic;
 using System.Linq;
 using JDBC.NET.Data.Models;
 
@@ -13,9 +13,9 @@ namespace JDBC.NET.Data
 
         public string[] LibraryJarFiles { get; }
 
-        public ImmutableDictionary<string, string> ConnectionProperties { get; }
+        public IReadOnlyDictionary<string, string> ConnectionProperties { get; }
 
-        private JdbcBridgePoolKey(string driverPath, string driverClass, string[] libraryJarFiles, ImmutableDictionary<string, string> connectionProperties)
+        private JdbcBridgePoolKey(string driverPath, string driverClass, string[] libraryJarFiles, IReadOnlyDictionary<string, string> connectionProperties)
         {
             DriverPath = driverPath;
             DriverClass = driverClass;
@@ -87,7 +87,7 @@ namespace JDBC.NET.Data
 
         public static JdbcBridgePoolKey Create(JdbcBridgeOptions options)
         {
-            return new JdbcBridgePoolKey(options.DriverPath, options.DriverClass, options.LibraryJarFiles, options.ConnectionProperties?.ToImmutableDictionary());
+            return new JdbcBridgePoolKey(options.DriverPath, options.DriverClass, options.LibraryJarFiles, options.ConnectionProperties);
         }
     }
 }
