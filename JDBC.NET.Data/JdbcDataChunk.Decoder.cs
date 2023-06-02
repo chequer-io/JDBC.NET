@@ -1,10 +1,15 @@
 ﻿using System;
-using System.Buffers.Binary;
 using System.Numerics;
 using System.Text;
 using JDBC.NET.Proto;
 
 namespace JDBC.NET.Data;
+
+#if NET6_0_OR_GREATER
+using BinaryPrimitives = System.Buffers.Binary.BinaryPrimitives;
+#else
+using BinaryPrimitives = JDBC.NET.Data.Utilities.BinaryPrimitivesCompat;
+#endif
 
 internal partial class JdbcDataChunk
 {
@@ -145,7 +150,12 @@ internal partial class JdbcDataChunk
     {
         var time = BinaryPrimitives.ReadInt64LittleEndian(data.Slice(position, 8));
         position += 8;
-        return DateOnly.FromDateTime(DateTime.UnixEpoch.AddMilliseconds(time).ToLocalTime());
+        var date = DateTime.UnixEpoch.AddMilliseconds(time).ToLocalTime();
+#if NET6_0_OR_GREATER
+        return DateOnly.FromDateTime(date);
+#else
+        return date;
+#endif
     }
 
     private static object DecodeTime(Type fieldType, in ReadOnlySpan<byte> data, ref int position)

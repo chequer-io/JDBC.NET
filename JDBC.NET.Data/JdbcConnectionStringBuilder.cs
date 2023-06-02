@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Data.Common;
-using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Nodes;
+using JDBC.NET.Data.Utilities;
 
 namespace JDBC.NET.Data
 {
@@ -48,7 +46,8 @@ namespace JDBC.NET.Data
                 if (string.IsNullOrEmpty(value))
                     return Array.Empty<string>();
 
-                return JsonSerializer.Deserialize<string[]>(value);
+                var bytes = Convert.FromBase64String(value);
+                return SimpleSerializer.DeserializeStringArray(bytes);
             }
             set
             {
@@ -58,7 +57,10 @@ namespace JDBC.NET.Data
                     return;
                 }
 
-                SetValue(nameof(LibraryJarFiles), JsonSerializer.Serialize(value));
+                var bytes = SimpleSerializer.SerializeStringArray(value);
+                var base64 = Convert.ToBase64String(bytes);
+
+                SetValue(nameof(LibraryJarFiles), base64);
             }
         }
         #endregion
