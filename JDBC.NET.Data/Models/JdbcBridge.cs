@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Grpc.Core;
 using Grpc.Core.Interceptors;
 using Grpc.Net.Client;
 using J2NET;
@@ -93,11 +93,22 @@ namespace JDBC.NET.Data.Models
             try
             {
                 var port = bridgePort.GetPort();
-
-                var channel = GrpcChannel.ForAddress($"http://{host}:{port}", new GrpcChannelOptions
+                var options = new GrpcChannelOptions
                 {
-                    Credentials = ChannelCredentials.Insecure
-                });
+                    MaxSendMessageSize = null,
+                    MaxReceiveMessageSize = null,
+#if NET6_0_OR_GREATER
+                    HttpHandler = new SocketsHttpHandler
+                    {
+                        PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,
+                        KeepAlivePingDelay = TimeSpan.FromSeconds(60),
+                        KeepAlivePingTimeout = TimeSpan.FromSeconds(30),
+                        EnableMultipleHttp2Connections = true
+                    }
+#endif
+                };
+
+                var channel = GrpcChannel.ForAddress($"http://{host}:{port}", options);
                 var jdbcCallInvoker = channel.Intercept(new JdbcInterceptor());
 
                 Driver = new DriverService.DriverServiceClient(jdbcCallInvoker);
