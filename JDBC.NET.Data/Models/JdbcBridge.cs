@@ -124,9 +124,29 @@ namespace JDBC.NET.Data.Models
 
         private IEnumerable<string> ResolveJarFiles()
         {
-            var defaultJarFiles = new[] { jarPath, Options.DriverPath };
+            var exeLoc = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+            var mainJarLocation = Path.Join(exeLoc, jarPath);
+
+            if (!File.Exists(mainJarLocation))
+                throw new FileNotFoundException(@$"'{jarPath}' not found at '{mainJarLocation}'");
+
+            var resolvedOptionsDriverPath = Options.DriverPath;
+
+            //check if Options.DriverPath is the actual full path to the file
+            if (!File.Exists(resolvedOptionsDriverPath))
+            {
+                //maybe Options.DriverPath is a relative driver path
+                resolvedOptionsDriverPath = Path.Combine(exeLoc, Options.DriverPath);
+
+                if (!File.Exists(resolvedOptionsDriverPath))
+                    throw new FileNotFoundException($"'{Options.DriverPath}' and '{resolvedOptionsDriverPath}' not found!");
+            }
+
+            var defaultJarFiles = new[] { mainJarLocation, resolvedOptionsDriverPath };
 
             IEnumerable<string> libraryJarFiles = Options.LibraryJarFiles ?? Enumerable.Empty<string>();
+
             return defaultJarFiles.Concat(libraryJarFiles);
         }
         #endregion
