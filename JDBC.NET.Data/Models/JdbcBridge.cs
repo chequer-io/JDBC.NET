@@ -137,7 +137,7 @@ namespace JDBC.NET.Data.Models
             if (!File.Exists(resolvedOptionsDriverPath))
             {
                 //maybe Options.DriverPath is a relative driver path
-                resolvedOptionsDriverPath = Path.Combine(exeLoc, Options.DriverPath);
+                resolvedOptionsDriverPath = Path.Join(exeLoc, Options.DriverPath);
 
                 if (!File.Exists(resolvedOptionsDriverPath))
                     throw new FileNotFoundException($"'{Options.DriverPath}' and '{resolvedOptionsDriverPath}' not found!");
