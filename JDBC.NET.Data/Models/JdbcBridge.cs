@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Grpc.Core;
+using Grpc.Core.Interceptors;
+using Grpc.Net.Client;
 using J2NET;
 using JDBC.NET.Proto;
 
@@ -13,7 +15,7 @@ namespace JDBC.NET.Data.Models
     internal sealed class JdbcBridge : IDisposable
     {
         #region Fields
-        private Channel _channel;
+        private GrpcChannel _channel;
         private Process _process;
         #endregion
 
@@ -91,15 +93,29 @@ namespace JDBC.NET.Data.Models
             try
             {
                 var port = bridgePort.GetPort();
+                var options = new GrpcChannelOptions
+                {
+                    MaxSendMessageSize = null,
+                    MaxReceiveMessageSize = null,
+#if NET6_0_OR_GREATER
+                    HttpHandler = new SocketsHttpHandler
+                    {
+                        PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,
+                        KeepAlivePingDelay = TimeSpan.FromSeconds(60),
+                        KeepAlivePingTimeout = TimeSpan.FromSeconds(30),
+                        EnableMultipleHttp2Connections = true
+                    }
+#endif
+                };
 
-                var channel = new JdbcChannel(host, port, ChannelCredentials.Insecure);
-                channel.ConnectAsync().Wait(CancellationToken.None);
+                var channel = GrpcChannel.ForAddress($"http://{host}:{port}", options);
+                var jdbcCallInvoker = channel.Intercept(new JdbcInterceptor());
 
-                Driver = new DriverService.DriverServiceClient(channel);
-                Reader = new ReaderService.ReaderServiceClient(channel);
-                Statement = new StatementService.StatementServiceClient(channel);
-                Database = new DatabaseService.DatabaseServiceClient(channel);
-                MetaData = new MetaDataService.MetaDataServiceClient(channel);
+                Driver = new DriverService.DriverServiceClient(jdbcCallInvoker);
+                Reader = new ReaderService.ReaderServiceClient(jdbcCallInvoker);
+                Statement = new StatementService.StatementServiceClient(jdbcCallInvoker);
+                Database = new DatabaseService.DatabaseServiceClient(jdbcCallInvoker);
+                MetaData = new MetaDataService.MetaDataServiceClient(jdbcCallInvoker);
 
                 var loadDriverResponse = Driver.loadDriver(
                     new LoadDriverRequest

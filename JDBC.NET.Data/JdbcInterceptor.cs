@@ -1,21 +1,18 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
+using Grpc.Core.Interceptors;
 using JDBC.NET.Data.Exceptions;
 
 namespace JDBC.NET.Data
 {
-    internal sealed class JdbcCallInvoker : DefaultCallInvoker
+    internal sealed class JdbcInterceptor : Interceptor
     {
-        public JdbcCallInvoker(Channel channel) : base(channel)
-        {
-        }
-
-        public override TResponse BlockingUnaryCall<TRequest, TResponse>(Method<TRequest, TResponse> method, string host, CallOptions options, TRequest request)
+        public override TResponse BlockingUnaryCall<TRequest, TResponse>(TRequest request, ClientInterceptorContext<TRequest, TResponse> context, BlockingUnaryCallContinuation<TRequest, TResponse> continuation)
         {
             try
             {
-                return base.BlockingUnaryCall(method, host, options, request);
+                return continuation(request, context);
             }
             catch (RpcException e)
             {
@@ -23,9 +20,9 @@ namespace JDBC.NET.Data
             }
         }
 
-        public override AsyncUnaryCall<TResponse> AsyncUnaryCall<TRequest, TResponse>(Method<TRequest, TResponse> method, string host, CallOptions options, TRequest request)
+        public override AsyncUnaryCall<TResponse> AsyncUnaryCall<TRequest, TResponse>(TRequest request, ClientInterceptorContext<TRequest, TResponse> context, AsyncUnaryCallContinuation<TRequest, TResponse> continuation)
         {
-            AsyncUnaryCall<TResponse> asyncCall = base.AsyncUnaryCall(method, host, options, request);
+            AsyncUnaryCall<TResponse> asyncCall = continuation(request, context);
 
             return new AsyncUnaryCall<TResponse>(
                 Wrap(asyncCall.ResponseAsync),
@@ -36,9 +33,9 @@ namespace JDBC.NET.Data
             );
         }
 
-        public override AsyncClientStreamingCall<TRequest, TResponse> AsyncClientStreamingCall<TRequest, TResponse>(Method<TRequest, TResponse> method, string host, CallOptions options)
+        public override AsyncClientStreamingCall<TRequest, TResponse> AsyncClientStreamingCall<TRequest, TResponse>(ClientInterceptorContext<TRequest, TResponse> context, AsyncClientStreamingCallContinuation<TRequest, TResponse> continuation)
         {
-            AsyncClientStreamingCall<TRequest, TResponse> asyncCall = base.AsyncClientStreamingCall(method, host, options);
+            AsyncClientStreamingCall<TRequest, TResponse> asyncCall = continuation(context);
 
             return new AsyncClientStreamingCall<TRequest, TResponse>(
                 Wrap(asyncCall.RequestStream),
@@ -50,9 +47,9 @@ namespace JDBC.NET.Data
             );
         }
 
-        public override AsyncDuplexStreamingCall<TRequest, TResponse> AsyncDuplexStreamingCall<TRequest, TResponse>(Method<TRequest, TResponse> method, string host, CallOptions options)
+        public override AsyncDuplexStreamingCall<TRequest, TResponse> AsyncDuplexStreamingCall<TRequest, TResponse>(ClientInterceptorContext<TRequest, TResponse> context, AsyncDuplexStreamingCallContinuation<TRequest, TResponse> continuation)
         {
-            AsyncDuplexStreamingCall<TRequest, TResponse> asyncCall = base.AsyncDuplexStreamingCall(method, host, options);
+            AsyncDuplexStreamingCall<TRequest, TResponse> asyncCall = continuation(context);
 
             return new AsyncDuplexStreamingCall<TRequest, TResponse>(
                 Wrap(asyncCall.RequestStream),
@@ -64,9 +61,9 @@ namespace JDBC.NET.Data
             );
         }
 
-        public override AsyncServerStreamingCall<TResponse> AsyncServerStreamingCall<TRequest, TResponse>(Method<TRequest, TResponse> method, string host, CallOptions options, TRequest request)
+        public override AsyncServerStreamingCall<TResponse> AsyncServerStreamingCall<TRequest, TResponse>(TRequest request, ClientInterceptorContext<TRequest, TResponse> context, AsyncServerStreamingCallContinuation<TRequest, TResponse> continuation)
         {
-            AsyncServerStreamingCall<TResponse> asyncCall = base.AsyncServerStreamingCall(method, host, options, request);
+            AsyncServerStreamingCall<TResponse> asyncCall = continuation(request, context);
 
             return new AsyncServerStreamingCall<TResponse>(
                 Wrap(asyncCall.ResponseStream),
