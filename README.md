@@ -11,11 +11,11 @@ Paste the following XML into your Project(*.csproj / .vbproj / .fsproj*) file.
 
 ```xml
 <PropertyGroup>
-    <RuntimeVersion>1.1.1</RuntimeVersion>
+    <RuntimeVersion>1.3.1</RuntimeVersion>
     <OSPlatform Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">OSX</OSPlatform>
     <OSPlatform Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">Linux</OSPlatform>
     <OSPlatform Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true'">Windows</OSPlatform>
-    <OSArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)</OSArchitecture>
+    <OSArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)</OSArchitecture>
 </PropertyGroup>
 
 <ItemGroup>
