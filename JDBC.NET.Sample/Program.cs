@@ -43,6 +43,8 @@ namespace JDBC.NET.Sample
 
         private static void Main(string[] args)
         {
+            using var jdbcEventListener = new JdbcEventListener();
+
             Console.Write("Driver Path : ");
             var driverPath = Console.ReadLine();
 

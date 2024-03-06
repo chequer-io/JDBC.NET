@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Grpc.Core;
@@ -81,7 +83,22 @@ namespace JDBC.NET.Data.Models
 
             javaRunArgs += $" -cp \"{classPaths}\" com.chequer.jdbcnet.bridge.Main -i {bridgePort.Id} -p {bridgePort.ServerPort}";
 
-            var process = JavaRuntime.Execute(javaRunArgs);
+            var processInfo = JavaRuntime.Create(javaRunArgs);
+            processInfo.RedirectStandardOutput = true;
+            processInfo.RedirectStandardError = true;
+            processInfo.UseShellExecute = false;
+
+            var process = Process.Start(processInfo);
+
+            if (process is null)
+                throw new IOException("Failed to start JDBC.NET process");
+
+            process.OutputDataReceived += (sender, args) => JdbcEventSource.Log.StandardOutputDataReceived(args.Data);
+            process.ErrorDataReceived += (sender, args) => JdbcEventSource.Log.StandardErrorDataReceived(args.Data);
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
             process.EnableRaisingEvents = true;
             process.Exited += delegate { bridgeCTS.Cancel(); };
 
