@@ -6,7 +6,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Grpc.Core;
+using Grpc.Core.Interceptors;
+using Grpc.Net.Client;
 using J2NET;
 using JDBC.NET.Proto;
 
@@ -15,7 +16,7 @@ namespace JDBC.NET.Data.Models
     internal sealed class JdbcBridge : IDisposable
     {
         #region Fields
-        private Channel _channel;
+        private GrpcChannel _channel;
         private Process _process;
         #endregion
 
@@ -109,14 +110,21 @@ namespace JDBC.NET.Data.Models
             {
                 var port = bridgePort.GetPort();
 
-                var channel = new JdbcChannel(host, port, ChannelCredentials.Insecure);
-                channel.ConnectAsync().Wait(CancellationToken.None);
+                var options = new GrpcChannelOptions
+                {
+                    MaxReceiveMessageSize = null,
+                    MaxSendMessageSize = null,
+                    DisposeHttpClient = true,
+                };
 
-                Driver = new DriverService.DriverServiceClient(channel);
-                Reader = new ReaderService.ReaderServiceClient(channel);
-                Statement = new StatementService.StatementServiceClient(channel);
-                Database = new DatabaseService.DatabaseServiceClient(channel);
-                MetaData = new MetaDataService.MetaDataServiceClient(channel);
+                var channel = GrpcChannel.ForAddress($"http://{host}:{port}", options);
+                var channelWithInterceptor = channel.Intercept(new JdbcCallInterceptor());
+
+                Driver = new DriverService.DriverServiceClient(channelWithInterceptor);
+                Reader = new ReaderService.ReaderServiceClient(channelWithInterceptor);
+                Statement = new StatementService.StatementServiceClient(channelWithInterceptor);
+                Database = new DatabaseService.DatabaseServiceClient(channelWithInterceptor);
+                MetaData = new MetaDataService.MetaDataServiceClient(channelWithInterceptor);
 
                 var loadDriverResponse = Driver.loadDriver(
                     new LoadDriverRequest
