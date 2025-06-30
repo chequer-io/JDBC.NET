@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -13,6 +14,7 @@ namespace JDBC.NET.Data.Models
 {
     internal sealed class JdbcBridge : IDisposable
     {
+
         #region Fields
         private Channel _channel;
         private Process _process;
@@ -20,6 +22,7 @@ namespace JDBC.NET.Data.Models
 
         #region Constants
         private const string host = "127.0.0.1";
+        private const string debugPortEnvironmentVariable = "DPF_JDBC_NET_BRIDGE_DEBUG_PORT";
 #if !DEBUG
         private const string jarPath = @"JDBC.NET.Bridge.jar";
 #else
@@ -70,9 +73,15 @@ namespace JDBC.NET.Data.Models
         {
             var bridgeCTS = new CancellationTokenSource();
             using var bridgePort = JdbcBridgePortService.Create(bridgeCTS.Token);
-
-           
+            
             var javaRunArgs = $"-XX:G1PeriodicGCInterval=5000";
+
+            var debugPort = DebugPort();
+            if (debugPort > 0)
+                javaRunArgs = $"\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address={debugPort}\"";
+
+            if (Options.DriverClass == "com.databricks.client.jdbc.Driver")
+                javaRunArgs += $" --add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED";
 
             if (Options.ConnectionProperties.TryGetValue("KRB5_CONFIG", out var krb5Config))
                 javaRunArgs += $" -Djava.security.krb5.conf={krb5Config}";
@@ -127,6 +136,15 @@ namespace JDBC.NET.Data.Models
             }
         }
 
+        private int DebugPort()
+        {
+            var value = Environment.GetEnvironmentVariable(debugPortEnvironmentVariable);
+            if (int.TryParse(value, out var result))
+                return result;
+
+            return -1;
+        }
+
         private static string GetClasspathSeparator()
         {
             return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ";" : ":";
@@ -134,7 +152,7 @@ namespace JDBC.NET.Data.Models
 
         private IEnumerable<string> ResolveJarFiles()
         {
-            var defaultJarFiles = new[] { jarPath, Options.DriverPath };
+            var defaultJarFiles = new[] { Path.Combine(Options.AppInstallationPath, jarPath), Options.DriverPath };
 
             IEnumerable<string> libraryJarFiles = Options.LibraryJarFiles ?? Enumerable.Empty<string>();
             return defaultJarFiles.Concat(libraryJarFiles);

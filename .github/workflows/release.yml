@@ -32,6 +32,11 @@ jobs:
         working-directory: JDBC.NET.Bridge
         run: mvn clean package
 
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v3.4.2
+        with:
+          dotnet-version: '7.0.200'
+
       - name: Package nuget
         working-directory: JDBC.NET.Data
         run: dotnet pack --configuration Release -p:Version=${{ inputs.VERSION }}

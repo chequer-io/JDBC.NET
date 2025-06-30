@@ -1,38 +1,34 @@
 using System;
 using System.Data.Common;
+using System.Security.Principal;
 using JDBC.NET.Data;
 
 namespace JDBC.NET.Sample
 {
     internal class Program
     {
-        private const string DriversPath = @"C:\DATPROF\Lib";
-        private const string DriverJar = @"C:\DATPROF\Lib\mssql-jdbc-12.4.2.jre11.jar";
+        private const string DriversPath = @"C:\Projects\sources\datprof-applications\Privacy\Privacy\bin\Debug\Drivers";
+        private const string DriverJar = @"C:\Projects\sources\datprof-applications\Privacy\Privacy\bin\Debug\Drivers\mssql-jdbc-12.4.2.jre11.jar";
         private const string DriverClass = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-        private const string JdbcUrl = "jdbc:sqlserver://datprofserver.database.windows.net:1433" +
-                                       ";database=DPF_T01" +
-                                       ";encrypt=true" +
-                                       ";trustServerCertificate=false" +
-                                       ";IntegratedSecurity=false;" +
-                                       ";hostNameInCertificate=*.database.windows.net" +
-                                       ";loginTimeout=30" +
-                                       ";Authentication=ActiveDirectoryIntegrated";
-        // private const string JdbcUrl = "jdbc:sqlserver://dpf-sqlserver-2\\MSSQL2022:2233;integratedSecurity=true;trustServerCertificate=true";
-        // private const string JdbcUrl = "jdbc:sqlserver://dpf-docker-1:1499;user=BB_T01;;password=BB_T01;integratedSecurity=false;trustServerCertificate=true;database=BB_T01";
+        private const string AppInstallationPath = @"C:\Program Files\DATPROF\DATPROF Privacy";
+        private const string JdbcUrl = "jdbc:sqlserver://dpf-sqlserver-2:2233;user=AL_T01;password=AL_T01;integratedSecurity=false;trustServerCertificate=true;database=AL_T01";
 
         private static void Main(string[] args)
         {
+
+            Console.WriteLine($"Application Installation Path: {AppInstallationPath}");
             Console.WriteLine($"Driver Path : {DriverJar}");
             Console.WriteLine($"Driver Class : {DriverClass}");
             Console.WriteLine($"JDBC Url : {JdbcUrl}");
-
+            
             var builder = new JdbcConnectionStringBuilder
             {
                 FetchSize = -1,
                 DriverPath = DriverJar,
                 DriverClass = DriverClass,
                 JdbcUrl = JdbcUrl,
-                LibraryPath = new []{DriversPath}
+                LibraryPath = new []{DriversPath},
+                AppInstallationPath = AppInstallationPath
             };
 
             try

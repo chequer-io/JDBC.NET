@@ -6,16 +6,19 @@ namespace JDBC.NET.Data.Models
 
         public string DriverClass { get; }
 
+        public string AppInstallationPath { get; }
+
         public string[] LibraryJarFiles { get; init; }
 
         public string[] LibraryPath { get; set; }
 
         public JdbcConnectionProperties ConnectionProperties { get; init; }
 
-        public JdbcBridgeOptions(string driverPath, string driverClass)
+        public JdbcBridgeOptions(string driverPath, string driverClass, string appInstallationPath)
         {
             DriverPath = driverPath;
             DriverClass = driverClass;
+            AppInstallationPath = appInstallationPath;
         }
     }
 }

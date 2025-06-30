@@ -123,7 +123,8 @@ namespace JDBC.NET.Data
 
                 var bridgeOptions = new JdbcBridgeOptions(
                     ConnectionStringBuilder.DriverPath,
-                    ConnectionStringBuilder.DriverClass
+                    ConnectionStringBuilder.DriverClass,
+                    ConnectionStringBuilder.AppInstallationPath
                 )
                 {
                     LibraryJarFiles = ConnectionStringBuilder.LibraryJarFiles,

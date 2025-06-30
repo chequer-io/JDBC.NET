@@ -37,6 +37,12 @@ namespace JDBC.NET.Data
             set => SetValue(nameof(JdbcUrl), value);
         }
 
+        public string AppInstallationPath
+        {
+            get => GetValue<string>(nameof(AppInstallationPath));
+            set => SetValue(nameof(AppInstallationPath), value);
+        }
+
         public string[] LibraryJarFiles
         {
             get
